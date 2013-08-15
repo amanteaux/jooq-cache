@@ -13,8 +13,8 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.jooq</groupId>
-			<artifactId>jooq-codegen</artifactId>
-			<version>3.1.0</version>
+			<artifactId>jooq-extended</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
