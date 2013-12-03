@@ -1,4 +1,4 @@
-package org.jooq.impl;
+package org.jooq.cache.impl;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -19,1036 +19,1205 @@ import java.sql.SQLXML;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
-/**
- * TODO Cacher avec tous les getter
- * 
- * @author amanteaux
- * 
- */
-public class CachedResultSet implements ResultSet {
-
-	private final ResultSet delegate;
-	private final String sql;
-
-	private final List<Object[]> cache;
-	private List<Object> row;
-
-	public CachedResultSet(String sql, ResultSet delegate) {
-		this.delegate = delegate;
-		this.sql = sql;
-
-		this.cache = new ArrayList<Object[]>();
-		this.row = new ArrayList<Object>();
+class CachedResultSet implements ResultSet {
+	
+	private final CachedData cachedData;
+	private int rowIndex;
+	private List<Object> currentRow;
+	
+	CachedResultSet(CachedData cachedData) {
+		this.cachedData = cachedData;
+		this.rowIndex = 0;
 	}
-
+	
 	@Override
 	public boolean next() throws SQLException {
-		cache.add(row.toArray());
-		row = new ArrayList<Object>();
-		return delegate.next();
+		if(rowIndex >= cachedData.getRows().size()) {
+			return false;
+		}
+		currentRow = cachedData.getRows().get(rowIndex++);
+		return true;
+	}
+	
+	private Object get(int columnIndex) {
+		return currentRow.get(columnIndex - 1);
 	}
 
-	@Override
-	public void close() throws SQLException {
-		delegate.close();
-	}
-
-	@Override
-	public boolean wasNull() throws SQLException {
-		return delegate.wasNull();
-	}
-
+	// data
+	
 	@Override
 	public String getString(int columnIndex) throws SQLException {
-		String value = delegate.getString(columnIndex);
-		row.add(value);
-		return value;
+		return (String) get(columnIndex);
 	}
 
 	@Override
 	public boolean getBoolean(int columnIndex) throws SQLException {
-		return delegate.getBoolean(columnIndex);
+		return (Boolean) get(columnIndex);
 	}
 
 	@Override
 	public byte getByte(int columnIndex) throws SQLException {
-		return delegate.getByte(columnIndex);
+		return (Byte) get(columnIndex);
 	}
 
 	@Override
 	public short getShort(int columnIndex) throws SQLException {
-		return delegate.getShort(columnIndex);
+		return (Short) get(columnIndex);
 	}
 
 	@Override
 	public int getInt(int columnIndex) throws SQLException {
-		return delegate.getInt(columnIndex);
+		return (Integer) get(columnIndex);
 	}
 
 	@Override
 	public long getLong(int columnIndex) throws SQLException {
-		Long value = delegate.getLong(columnIndex);
-		row.add(value);
-		return value;
+		return (Long) get(columnIndex);
 	}
 
 	@Override
 	public float getFloat(int columnIndex) throws SQLException {
-		return delegate.getFloat(columnIndex);
+		return (Float) get(columnIndex);
 	}
 
 	@Override
 	public double getDouble(int columnIndex) throws SQLException {
-		return delegate.getDouble(columnIndex);
+		return (Double) get(columnIndex);
 	}
 
 	@Override
 	public BigDecimal getBigDecimal(int columnIndex, int scale)
 			throws SQLException {
-		return delegate.getBigDecimal(columnIndex, scale);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public byte[] getBytes(int columnIndex) throws SQLException {
-		return delegate.getBytes(columnIndex);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Date getDate(int columnIndex) throws SQLException {
-		return delegate.getDate(columnIndex);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Time getTime(int columnIndex) throws SQLException {
-		return delegate.getTime(columnIndex);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Timestamp getTimestamp(int columnIndex) throws SQLException {
-		return delegate.getTimestamp(columnIndex);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public InputStream getAsciiStream(int columnIndex) throws SQLException {
-		return delegate.getAsciiStream(columnIndex);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public InputStream getUnicodeStream(int columnIndex) throws SQLException {
-		return delegate.getUnicodeStream(columnIndex);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public InputStream getBinaryStream(int columnIndex) throws SQLException {
-		return delegate.getBinaryStream(columnIndex);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public String getString(String columnLabel) throws SQLException {
-		String value = delegate.getString(columnLabel);
-		row.add(value);
-		return value;
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public boolean getBoolean(String columnLabel) throws SQLException {
-		return delegate.getBoolean(columnLabel);
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	@Override
 	public byte getByte(String columnLabel) throws SQLException {
-		return delegate.getByte(columnLabel);
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	@Override
 	public short getShort(String columnLabel) throws SQLException {
-		return delegate.getShort(columnLabel);
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	@Override
 	public int getInt(String columnLabel) throws SQLException {
-		return delegate.getInt(columnLabel);
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	@Override
 	public long getLong(String columnLabel) throws SQLException {
-		Long value = delegate.getLong(columnLabel);
-		row.add(value);
-		return value;
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	@Override
 	public float getFloat(String columnLabel) throws SQLException {
-		return delegate.getFloat(columnLabel);
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	@Override
 	public double getDouble(String columnLabel) throws SQLException {
-		return delegate.getDouble(columnLabel);
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	@Override
 	public BigDecimal getBigDecimal(String columnLabel, int scale)
 			throws SQLException {
-		return delegate.getBigDecimal(columnLabel, scale);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public byte[] getBytes(String columnLabel) throws SQLException {
-		return delegate.getBytes(columnLabel);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Date getDate(String columnLabel) throws SQLException {
-		return delegate.getDate(columnLabel);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Time getTime(String columnLabel) throws SQLException {
-		return delegate.getTime(columnLabel);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Timestamp getTimestamp(String columnLabel) throws SQLException {
-		return delegate.getTimestamp(columnLabel);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public InputStream getAsciiStream(String columnLabel) throws SQLException {
-		return delegate.getAsciiStream(columnLabel);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public InputStream getUnicodeStream(String columnLabel) throws SQLException {
-		return delegate.getUnicodeStream(columnLabel);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public InputStream getBinaryStream(String columnLabel) throws SQLException {
-		return delegate.getBinaryStream(columnLabel);
+		// TODO Auto-generated method stub
+		return null;
 	}
-
-	@Override
-	public SQLWarning getWarnings() throws SQLException {
-		return delegate.getWarnings();
-	}
-
-	@Override
-	public void clearWarnings() throws SQLException {
-		delegate.clearWarnings();
-	}
-
-	@Override
-	public String getCursorName() throws SQLException {
-		return delegate.getCursorName();
-	}
-
-	@Override
-	public ResultSetMetaData getMetaData() throws SQLException {
-		return delegate.getMetaData();
-	}
-
-	@Override
-	public Object getObject(int columnIndex) throws SQLException {
-		return delegate.getObject(columnIndex);
-	}
-
-	@Override
-	public Object getObject(String columnLabel) throws SQLException {
-		return delegate.getObject(columnLabel);
-	}
-
-	@Override
-	public int findColumn(String columnLabel) throws SQLException {
-		return delegate.findColumn(columnLabel);
-	}
-
-	@Override
-	public Reader getCharacterStream(int columnIndex) throws SQLException {
-		return delegate.getCharacterStream(columnIndex);
-	}
-
-	@Override
-	public Reader getCharacterStream(String columnLabel) throws SQLException {
-		return delegate.getCharacterStream(columnLabel);
-	}
-
-	@Override
-	public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
-		return delegate.getBigDecimal(columnIndex);
-	}
-
-	@Override
-	public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
-		return delegate.getBigDecimal(columnLabel);
-	}
-
-	@Override
-	public boolean isBeforeFirst() throws SQLException {
-		return delegate.isBeforeFirst();
-	}
-
-	@Override
-	public boolean isAfterLast() throws SQLException {
-		return delegate.isAfterLast();
-	}
-
-	@Override
-	public boolean isFirst() throws SQLException {
-		return delegate.isFirst();
-	}
-
-	@Override
-	public boolean isLast() throws SQLException {
-		return delegate.isLast();
-	}
-
-	@Override
-	public void beforeFirst() throws SQLException {
-		delegate.beforeFirst();
-	}
-
-	@Override
-	public void afterLast() throws SQLException {
-		delegate.afterLast();
-	}
-
-	@Override
-	public boolean first() throws SQLException {
-		return delegate.first();
-	}
-
-	@Override
-	public boolean last() throws SQLException {
-		return delegate.last();
-	}
-
-	@Override
-	public int getRow() throws SQLException {
-		return delegate.getRow();
-	}
-
-	@Override
-	public boolean absolute(int row) throws SQLException {
-		return delegate.absolute(row);
-	}
-
-	@Override
-	public boolean relative(int rows) throws SQLException {
-		return delegate.relative(rows);
-	}
-
-	@Override
-	public boolean previous() throws SQLException {
-		return delegate.previous();
-	}
-
+	
+	// other
+	
 	@Override
 	public <T> T unwrap(Class<T> iface) throws SQLException {
-		return delegate.unwrap(iface);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
-		return delegate.isWrapperFor(iface);
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void close() throws SQLException {
+		// nothing to do
+	}
+
+	@Override
+	public boolean wasNull() throws SQLException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public SQLWarning getWarnings() throws SQLException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void clearWarnings() throws SQLException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String getCursorName() throws SQLException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ResultSetMetaData getMetaData() throws SQLException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object getObject(int columnIndex) throws SQLException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object getObject(String columnLabel) throws SQLException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int findColumn(String columnLabel) throws SQLException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public Reader getCharacterStream(int columnIndex) throws SQLException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Reader getCharacterStream(String columnLabel) throws SQLException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean isBeforeFirst() throws SQLException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isAfterLast() throws SQLException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isFirst() throws SQLException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isLast() throws SQLException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void beforeFirst() throws SQLException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void afterLast() throws SQLException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean first() throws SQLException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean last() throws SQLException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int getRow() throws SQLException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public boolean absolute(int row) throws SQLException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean relative(int rows) throws SQLException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean previous() throws SQLException {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	@Override
 	public void setFetchDirection(int direction) throws SQLException {
-		delegate.setFetchDirection(direction);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public int getFetchDirection() throws SQLException {
-		return delegate.getFetchDirection();
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	@Override
 	public void setFetchSize(int rows) throws SQLException {
-		delegate.setFetchSize(rows);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public int getFetchSize() throws SQLException {
-		return delegate.getFetchSize();
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	@Override
 	public int getType() throws SQLException {
-		return delegate.getType();
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	@Override
 	public int getConcurrency() throws SQLException {
-		return delegate.getConcurrency();
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	@Override
 	public boolean rowUpdated() throws SQLException {
-		return delegate.rowUpdated();
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	@Override
 	public boolean rowInserted() throws SQLException {
-		return delegate.rowInserted();
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	@Override
 	public boolean rowDeleted() throws SQLException {
-		return delegate.rowDeleted();
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	@Override
 	public void updateNull(int columnIndex) throws SQLException {
-		delegate.updateNull(columnIndex);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateBoolean(int columnIndex, boolean x) throws SQLException {
-		delegate.updateBoolean(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateByte(int columnIndex, byte x) throws SQLException {
-		delegate.updateByte(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateShort(int columnIndex, short x) throws SQLException {
-		delegate.updateShort(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateInt(int columnIndex, int x) throws SQLException {
-		delegate.updateInt(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateLong(int columnIndex, long x) throws SQLException {
-		delegate.updateLong(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateFloat(int columnIndex, float x) throws SQLException {
-		delegate.updateFloat(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateDouble(int columnIndex, double x) throws SQLException {
-		delegate.updateDouble(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateBigDecimal(int columnIndex, BigDecimal x)
 			throws SQLException {
-		delegate.updateBigDecimal(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateString(int columnIndex, String x) throws SQLException {
-		delegate.updateString(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateBytes(int columnIndex, byte[] x) throws SQLException {
-		delegate.updateBytes(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateDate(int columnIndex, Date x) throws SQLException {
-		delegate.updateDate(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateTime(int columnIndex, Time x) throws SQLException {
-		delegate.updateTime(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateTimestamp(int columnIndex, Timestamp x)
 			throws SQLException {
-		delegate.updateTimestamp(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateAsciiStream(int columnIndex, InputStream x, int length)
 			throws SQLException {
-		delegate.updateAsciiStream(columnIndex, x, length);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateBinaryStream(int columnIndex, InputStream x, int length)
 			throws SQLException {
-		delegate.updateBinaryStream(columnIndex, x, length);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateCharacterStream(int columnIndex, Reader x, int length)
 			throws SQLException {
-		delegate.updateCharacterStream(columnIndex, x, length);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateObject(int columnIndex, Object x, int scaleOrLength)
 			throws SQLException {
-		delegate.updateObject(columnIndex, x, scaleOrLength);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateObject(int columnIndex, Object x) throws SQLException {
-		delegate.updateObject(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateNull(String columnLabel) throws SQLException {
-		delegate.updateNull(columnLabel);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateBoolean(String columnLabel, boolean x)
 			throws SQLException {
-		delegate.updateBoolean(columnLabel, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateByte(String columnLabel, byte x) throws SQLException {
-		delegate.updateByte(columnLabel, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateShort(String columnLabel, short x) throws SQLException {
-		delegate.updateShort(columnLabel, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateInt(String columnLabel, int x) throws SQLException {
-		delegate.updateInt(columnLabel, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateLong(String columnLabel, long x) throws SQLException {
-		delegate.updateLong(columnLabel, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateFloat(String columnLabel, float x) throws SQLException {
-		delegate.updateFloat(columnLabel, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateDouble(String columnLabel, double x) throws SQLException {
-		delegate.updateDouble(columnLabel, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateBigDecimal(String columnLabel, BigDecimal x)
 			throws SQLException {
-		delegate.updateBigDecimal(columnLabel, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateString(String columnLabel, String x) throws SQLException {
-		delegate.updateString(columnLabel, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateBytes(String columnLabel, byte[] x) throws SQLException {
-		delegate.updateBytes(columnLabel, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateDate(String columnLabel, Date x) throws SQLException {
-		delegate.updateDate(columnLabel, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateTime(String columnLabel, Time x) throws SQLException {
-		delegate.updateTime(columnLabel, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateTimestamp(String columnLabel, Timestamp x)
 			throws SQLException {
-		delegate.updateTimestamp(columnLabel, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateAsciiStream(String columnLabel, InputStream x, int length)
 			throws SQLException {
-		delegate.updateAsciiStream(columnLabel, x, length);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateBinaryStream(String columnLabel, InputStream x, int length)
 			throws SQLException {
-		delegate.updateBinaryStream(columnLabel, x, length);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateCharacterStream(String columnLabel, Reader reader,
 			int length) throws SQLException {
-		delegate.updateCharacterStream(columnLabel, reader, length);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateObject(String columnLabel, Object x, int scaleOrLength)
 			throws SQLException {
-		delegate.updateObject(columnLabel, x, scaleOrLength);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateObject(String columnLabel, Object x) throws SQLException {
-		delegate.updateObject(columnLabel, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void insertRow() throws SQLException {
-		delegate.insertRow();
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateRow() throws SQLException {
-		delegate.updateRow();
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void deleteRow() throws SQLException {
-		delegate.deleteRow();
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void refreshRow() throws SQLException {
-		delegate.refreshRow();
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void cancelRowUpdates() throws SQLException {
-		delegate.cancelRowUpdates();
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void moveToInsertRow() throws SQLException {
-		delegate.moveToInsertRow();
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void moveToCurrentRow() throws SQLException {
-		delegate.moveToCurrentRow();
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public Statement getStatement() throws SQLException {
-		return delegate.getStatement();
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Object getObject(int columnIndex, Map<String, Class<?>> map)
 			throws SQLException {
-		return delegate.getObject(columnIndex, map);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Ref getRef(int columnIndex) throws SQLException {
-		return delegate.getRef(columnIndex);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Blob getBlob(int columnIndex) throws SQLException {
-		return delegate.getBlob(columnIndex);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Clob getClob(int columnIndex) throws SQLException {
-		return delegate.getClob(columnIndex);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Array getArray(int columnIndex) throws SQLException {
-		return delegate.getArray(columnIndex);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Object getObject(String columnLabel, Map<String, Class<?>> map)
 			throws SQLException {
-		return delegate.getObject(columnLabel, map);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Ref getRef(String columnLabel) throws SQLException {
-		return delegate.getRef(columnLabel);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Blob getBlob(String columnLabel) throws SQLException {
-		return delegate.getBlob(columnLabel);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Clob getClob(String columnLabel) throws SQLException {
-		return delegate.getClob(columnLabel);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Array getArray(String columnLabel) throws SQLException {
-		return delegate.getArray(columnLabel);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Date getDate(int columnIndex, Calendar cal) throws SQLException {
-		return delegate.getDate(columnIndex, cal);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Date getDate(String columnLabel, Calendar cal) throws SQLException {
-		return delegate.getDate(columnLabel, cal);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Time getTime(int columnIndex, Calendar cal) throws SQLException {
-		return delegate.getTime(columnIndex, cal);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Time getTime(String columnLabel, Calendar cal) throws SQLException {
-		return delegate.getTime(columnLabel, cal);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Timestamp getTimestamp(int columnIndex, Calendar cal)
 			throws SQLException {
-		return delegate.getTimestamp(columnIndex, cal);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Timestamp getTimestamp(String columnLabel, Calendar cal)
 			throws SQLException {
-		return delegate.getTimestamp(columnLabel, cal);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public URL getURL(int columnIndex) throws SQLException {
-		return delegate.getURL(columnIndex);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public URL getURL(String columnLabel) throws SQLException {
-		return delegate.getURL(columnLabel);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public void updateRef(int columnIndex, Ref x) throws SQLException {
-		delegate.updateRef(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateRef(String columnLabel, Ref x) throws SQLException {
-		delegate.updateRef(columnLabel, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateBlob(int columnIndex, Blob x) throws SQLException {
-		delegate.updateBlob(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateBlob(String columnLabel, Blob x) throws SQLException {
-		delegate.updateBlob(columnLabel, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateClob(int columnIndex, Clob x) throws SQLException {
-		delegate.updateClob(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateClob(String columnLabel, Clob x) throws SQLException {
-		delegate.updateClob(columnLabel, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateArray(int columnIndex, Array x) throws SQLException {
-		delegate.updateArray(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateArray(String columnLabel, Array x) throws SQLException {
-		delegate.updateArray(columnLabel, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public RowId getRowId(int columnIndex) throws SQLException {
-		return delegate.getRowId(columnIndex);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public RowId getRowId(String columnLabel) throws SQLException {
-		return delegate.getRowId(columnLabel);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public void updateRowId(int columnIndex, RowId x) throws SQLException {
-		delegate.updateRowId(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateRowId(String columnLabel, RowId x) throws SQLException {
-		delegate.updateRowId(columnLabel, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public int getHoldability() throws SQLException {
-		return delegate.getHoldability();
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	@Override
 	public boolean isClosed() throws SQLException {
-		return delegate.isClosed();
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	@Override
 	public void updateNString(int columnIndex, String nString)
 			throws SQLException {
-		delegate.updateNString(columnIndex, nString);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateNString(String columnLabel, String nString)
 			throws SQLException {
-		delegate.updateNString(columnLabel, nString);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateNClob(int columnIndex, NClob nClob) throws SQLException {
-		delegate.updateNClob(columnIndex, nClob);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateNClob(String columnLabel, NClob nClob)
 			throws SQLException {
-		delegate.updateNClob(columnLabel, nClob);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public NClob getNClob(int columnIndex) throws SQLException {
-		return delegate.getNClob(columnIndex);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public NClob getNClob(String columnLabel) throws SQLException {
-		return delegate.getNClob(columnLabel);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public SQLXML getSQLXML(int columnIndex) throws SQLException {
-		return delegate.getSQLXML(columnIndex);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public SQLXML getSQLXML(String columnLabel) throws SQLException {
-		return delegate.getSQLXML(columnLabel);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public void updateSQLXML(int columnIndex, SQLXML xmlObject)
 			throws SQLException {
-		delegate.updateSQLXML(columnIndex, xmlObject);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateSQLXML(String columnLabel, SQLXML xmlObject)
 			throws SQLException {
-		delegate.updateSQLXML(columnLabel, xmlObject);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public String getNString(int columnIndex) throws SQLException {
-		return delegate.getNString(columnIndex);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public String getNString(String columnLabel) throws SQLException {
-		return delegate.getNString(columnLabel);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Reader getNCharacterStream(int columnIndex) throws SQLException {
-		return delegate.getNCharacterStream(columnIndex);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Reader getNCharacterStream(String columnLabel) throws SQLException {
-		return delegate.getNCharacterStream(columnLabel);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public void updateNCharacterStream(int columnIndex, Reader x, long length)
 			throws SQLException {
-		delegate.updateNCharacterStream(columnIndex, x, length);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateNCharacterStream(String columnLabel, Reader reader,
 			long length) throws SQLException {
-		delegate.updateNCharacterStream(columnLabel, reader, length);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateAsciiStream(int columnIndex, InputStream x, long length)
 			throws SQLException {
-		delegate.updateAsciiStream(columnIndex, x, length);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateBinaryStream(int columnIndex, InputStream x, long length)
 			throws SQLException {
-		delegate.updateBinaryStream(columnIndex, x, length);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateCharacterStream(int columnIndex, Reader x, long length)
 			throws SQLException {
-		delegate.updateCharacterStream(columnIndex, x, length);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateAsciiStream(String columnLabel, InputStream x, long length)
 			throws SQLException {
-		delegate.updateAsciiStream(columnLabel, x, length);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateBinaryStream(String columnLabel, InputStream x,
 			long length) throws SQLException {
-		delegate.updateBinaryStream(columnLabel, x, length);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateCharacterStream(String columnLabel, Reader reader,
 			long length) throws SQLException {
-		delegate.updateCharacterStream(columnLabel, reader, length);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateBlob(int columnIndex, InputStream inputStream, long length)
 			throws SQLException {
-		delegate.updateBlob(columnIndex, inputStream, length);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateBlob(String columnLabel, InputStream inputStream,
 			long length) throws SQLException {
-		delegate.updateBlob(columnLabel, inputStream, length);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateClob(int columnIndex, Reader reader, long length)
 			throws SQLException {
-		delegate.updateClob(columnIndex, reader, length);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateClob(String columnLabel, Reader reader, long length)
 			throws SQLException {
-		delegate.updateClob(columnLabel, reader, length);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateNClob(int columnIndex, Reader reader, long length)
 			throws SQLException {
-		delegate.updateNClob(columnIndex, reader, length);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateNClob(String columnLabel, Reader reader, long length)
 			throws SQLException {
-		delegate.updateNClob(columnLabel, reader, length);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateNCharacterStream(int columnIndex, Reader x)
 			throws SQLException {
-		delegate.updateNCharacterStream(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateNCharacterStream(String columnLabel, Reader reader)
 			throws SQLException {
-		delegate.updateNCharacterStream(columnLabel, reader);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateAsciiStream(int columnIndex, InputStream x)
 			throws SQLException {
-		delegate.updateAsciiStream(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateBinaryStream(int columnIndex, InputStream x)
 			throws SQLException {
-		delegate.updateBinaryStream(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateCharacterStream(int columnIndex, Reader x)
 			throws SQLException {
-		delegate.updateCharacterStream(columnIndex, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateAsciiStream(String columnLabel, InputStream x)
 			throws SQLException {
-		delegate.updateAsciiStream(columnLabel, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateBinaryStream(String columnLabel, InputStream x)
 			throws SQLException {
-		delegate.updateBinaryStream(columnLabel, x);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateCharacterStream(String columnLabel, Reader reader)
 			throws SQLException {
-		delegate.updateCharacterStream(columnLabel, reader);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateBlob(int columnIndex, InputStream inputStream)
 			throws SQLException {
-		delegate.updateBlob(columnIndex, inputStream);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateBlob(String columnLabel, InputStream inputStream)
 			throws SQLException {
-		delegate.updateBlob(columnLabel, inputStream);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateClob(int columnIndex, Reader reader) throws SQLException {
-		delegate.updateClob(columnIndex, reader);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateClob(String columnLabel, Reader reader)
 			throws SQLException {
-		delegate.updateClob(columnLabel, reader);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateNClob(int columnIndex, Reader reader) throws SQLException {
-		delegate.updateNClob(columnIndex, reader);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void updateNClob(String columnLabel, Reader reader)
 			throws SQLException {
-		delegate.updateNClob(columnLabel, reader);
+		// TODO Auto-generated method stub
+		
 	}
-
+	
 }

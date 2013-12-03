@@ -1,4 +1,4 @@
-package org.jooq.impl;
+package org.jooq.cache.impl;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -23,30 +23,42 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-public class CachedPreparedStatement implements PreparedStatement {
+import org.jooq.impl.CacheQueryInformation;
+import org.jooq.tools.JooqLogger;
 
-	private static final Map<String, Object> CACHE = new ConcurrentHashMap<String, Object>();
+class CachedPreparedStatement implements PreparedStatement {
 
+	private static final JooqLogger log   = JooqLogger.getLogger(CachedPreparedStatement.class);
+	
 	private final PreparedStatement delegate;
-	private final String sql;
+	private final CacheQueryInformation queryInformation;
+	private CachedData cachedData;
 
-
-	public CachedPreparedStatement(String sql, PreparedStatement delegate)
-			throws SQLException {
-		this.sql = sql;
+	CachedPreparedStatement(PreparedStatement delegate, CacheQueryInformation queryInformation) throws SQLException {
 		this.delegate = delegate;
+		this.queryInformation = queryInformation;
+		this.cachedData = null;
 	}
 
 	@Override
 	public boolean execute() throws SQLException {
-		return CACHE.containsKey(sql) ? true : delegate.execute();
+		if(queryInformation.getCacheProvider().queryCache().contains(queryInformation.getQuery())) {
+			Map<String, CachedData> cache = queryInformation.getCacheProvider().queryCache().get(queryInformation.getQuery());
+			if(cache.containsKey(queryInformation.getQueryParameters())) {
+				cachedData = cache.get(queryInformation.getQueryParameters());
+				if(log.isDebugEnabled()) {
+					log.debug("Cache is used for this query");
+				}
+			}
+		}
+		
+		return cachedData != null ? true : delegate.execute();
 	}
 
 	@Override
 	public ResultSet getResultSet() throws SQLException {
-		return new CachedResultSet(sql, delegate.getResultSet());
+		return cachedData != null ? cachedData.newResultSet() : new CachingResultSet(delegate.getResultSet(), queryInformation);
 	}
 
 	// delegate calls
