@@ -22,31 +22,31 @@ import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class CachedPreparedStatement implements PreparedStatement {
 
-	private static final Map<String, Object> CACHE = new ConcurrentHashMap<String, Object>();
-
 	private final PreparedStatement delegate;
-	private final String sql;
+	private final CacheQueryInformation queryInformation;
 
 
-	public CachedPreparedStatement(String sql, PreparedStatement delegate)
+	public CachedPreparedStatement(PreparedStatement delegate, CacheQueryInformation queryInformation)
 			throws SQLException {
-		this.sql = sql;
 		this.delegate = delegate;
+		this.queryInformation = queryInformation;
 	}
 
 	@Override
 	public boolean execute() throws SQLException {
-		return CACHE.containsKey(sql) ? true : delegate.execute();
+		System.out.println("Query\t: " + queryInformation.getQuery());
+		System.out.println("Paramz\t: " + queryInformation.getQueryParameters().toString());
+		System.out.println("Tables\t: " + queryInformation.getLinkedTables().toString());
+		// TODO si la requête est cachée, ne pas l'executer :)
+		return delegate.execute();
 	}
 
 	@Override
 	public ResultSet getResultSet() throws SQLException {
-		return new CachedResultSet(sql, delegate.getResultSet());
+		return new CachedResultSet(delegate.getResultSet(), queryInformation);
 	}
 
 	// delegate calls

@@ -33,14 +33,14 @@ import java.util.Map;
 public class CachedResultSet implements ResultSet {
 
 	private final ResultSet delegate;
-	private final String sql;
+	private final CacheQueryInformation queryInformation;
 
 	private final List<Object[]> cache;
 	private List<Object> row;
 
-	public CachedResultSet(String sql, ResultSet delegate) {
+	public CachedResultSet(ResultSet delegate, CacheQueryInformation queryInformation) {
 		this.delegate = delegate;
-		this.sql = sql;
+		this.queryInformation = queryInformation;
 
 		this.cache = new ArrayList<Object[]>();
 		this.row = new ArrayList<Object>();

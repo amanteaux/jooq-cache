@@ -21,16 +21,18 @@ import java.util.Properties;
 public class CachedConnection implements Connection {
 	
 	private final Connection delegate;
+	private final CacheQueryInformation queryInformation;
 	
-	public CachedConnection(Connection delegate) {
+	public CachedConnection(Connection delegate, CacheQueryInformation queryInformation) {
 		this.delegate = delegate;
+		this.queryInformation = queryInformation;
 	}
 
 	// cached prepared statement
 
 	@Override
 	public PreparedStatement prepareStatement(String sql) throws SQLException {
-		return new CachedPreparedStatement(sql, delegate.prepareStatement(sql));
+		return new CachedPreparedStatement(delegate.prepareStatement(sql), queryInformation);
 	}
 
 	// TODO CACHER TOUS LES prepareStatement
