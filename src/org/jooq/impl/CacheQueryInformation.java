@@ -9,7 +9,7 @@ import org.jooq.VisitListener;
 import org.jooq.cache.CacheProvider;
 
 public class CacheQueryInformation {
-
+ 
 	private final String query;
 	private final String queryParameters;
 	private final VisitListener visitListener;
