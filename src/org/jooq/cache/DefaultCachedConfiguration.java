@@ -1,9 +1,7 @@
-package org.jooq.impl;
+package org.jooq.cache;
 
 import org.jooq.CachedConfiguration;
 import org.jooq.DefaultConfigurationExtended;
-import org.jooq.cache.CacheProvider;
-import org.jooq.cache.DefaultCacheProvider;
 
 public class DefaultCachedConfiguration extends DefaultConfigurationExtended implements CachedConfiguration {
 
@@ -11,7 +9,7 @@ public class DefaultCachedConfiguration extends DefaultConfigurationExtended imp
 
 	@Override
 	public CacheProvider cacheProvider() {
-		return DefaultCacheProvider.CACHE_PROVIDER;
+		return DefaultCacheProvider.INSTANCE;
 	}
 
 }

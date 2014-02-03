@@ -1,5 +1,6 @@
 package org.jooq.cache;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -10,24 +11,24 @@ import java.util.concurrent.ConcurrentHashMap;
  * @param <K>
  * @param <V>
  */
-public class DefaultCache<K, V> implements Cache<K, V> {
+public class DefaultCache implements Cache {
 	
-	private final Map<K, V> data = new ConcurrentHashMap<K, V>();
+	private final Map<String, Serializable> data = new ConcurrentHashMap<String, Serializable>();
 
 	@Override
-	public boolean contains(K key) {
-		return data.containsKey(key);
-	}
-
-	@Override
-	public V put(K key, V value) {
+	public Serializable put(String key, Serializable value) {
 		data.put(key, value);
 		return value;
 	}
 
 	@Override
-	public V get(K key) {
+	public Serializable get(String key) {
 		return data.get(key);
+	}
+
+	@Override
+	public void clear() {
+		data.clear();
 	}
 
 }

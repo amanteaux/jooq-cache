@@ -1,4 +1,4 @@
-package org.jooq.cache.impl;
+package org.jooq.cache.jdbc;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -22,7 +22,6 @@ import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
-import java.util.Map;
 
 import org.jooq.impl.CacheQueryInformation;
 import org.jooq.tools.JooqLogger;
@@ -43,14 +42,10 @@ class CachedPreparedStatement implements PreparedStatement {
 
 	@Override
 	public boolean execute() throws SQLException {
-		if(queryInformation.getCacheProvider().queryCache().contains(queryInformation.getQuery())) {
-			Map<String, CachedData> cache = queryInformation.getCacheProvider().queryCache().get(queryInformation.getQuery());
-			if(cache.containsKey(queryInformation.getQueryParameters())) {
-				cachedData = cache.get(queryInformation.getQueryParameters());
-				if(log.isDebugEnabled()) {
-					log.debug("Cache is used for this query");
-				}
-			}
+		cachedData = Utils.cachedData(queryInformation.getCacheProvider(), queryInformation.getQuery(), queryInformation.getQueryParameters());
+		
+		if(cachedData != null && log.isDebugEnabled()) {
+			log.debug("Cache is used for this query");
 		}
 		
 		return cachedData != null ? true : delegate.execute();

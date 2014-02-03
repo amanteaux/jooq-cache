@@ -1,4 +1,4 @@
-package org.jooq.cache.impl;
+package org.jooq.cache.jdbc;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -85,14 +85,8 @@ class CachingResultSet implements ResultSet {
 		delegate.close();
 		
 		addRowIfNecessary();
-		// TODO voir si un sens est préférable
-		Utils.putQuery(
-			queryInformation.getCacheProvider().queryCache(),
-			queryInformation.getQuery(),
-			queryInformation.getQueryParameters(),
-			new CachedData(Collections.unmodifiableList(rows), fields)
-		);
-		Utils.putLinks(queryInformation.getCacheProvider().linksCache(), queryInformation.getQuery(), queryInformation.getLinkedTables());
+
+		Utils.cache(queryInformation.getCacheProvider(), queryInformation.getLinkedTables(), queryInformation.getQuery(), queryInformation.getQueryParameters(), new CachedData(Collections.unmodifiableList(rows), fields));
 		
 	}
 

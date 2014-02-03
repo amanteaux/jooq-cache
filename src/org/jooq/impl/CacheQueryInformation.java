@@ -11,7 +11,7 @@ import org.jooq.cache.CacheProvider;
 public class CacheQueryInformation {
  
 	private final String query;
-	private final String queryParameters;
+	private final String queryParameters; // TODO à virer
 	private final VisitListener visitListener;
 	private final Set<Table<?>> referencedTables;
 	private final CacheProvider cacheProvider; 

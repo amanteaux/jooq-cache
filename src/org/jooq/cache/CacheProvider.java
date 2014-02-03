@@ -1,15 +1,23 @@
 package org.jooq.cache;
 
-import java.util.Map;
-import java.util.Set;
-
-import org.jooq.Table;
-import org.jooq.cache.impl.CachedData;
-
+/**
+ * Handle cache objects initialization
+ * @author Aurélien Manteaux
+ *
+ */
 public interface CacheProvider {
-	
-	Cache<String, Map<String, CachedData>> queryCache();
-	
-	Cache<Table<?>, Set<String>> linksCache();
 
+	/**
+	 * This cache should not expire.
+	 * @return A cache instance which will be use to index the links between table and query 
+	 */
+	Cache tableIndex();
+	
+	/**
+	 * This cache should expire to avoid loading all the database into the cache
+	 * @param query
+	 * @return A cache instance for a query
+	 */
+	Cache fetchByQuery(String query);
+	
 }

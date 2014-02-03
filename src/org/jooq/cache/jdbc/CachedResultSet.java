@@ -1,4 +1,4 @@
-package org.jooq.cache.impl;
+package org.jooq.cache.jdbc;
 
 import java.io.InputStream;
 import java.io.Reader;

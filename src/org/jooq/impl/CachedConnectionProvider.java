@@ -3,7 +3,7 @@ package org.jooq.impl;
 import java.sql.Connection;
 
 import org.jooq.ConnectionProvider;
-import org.jooq.cache.impl.CachedConnection;
+import org.jooq.cache.jdbc.CachedConnection;
 import org.jooq.exception.DataAccessException;
 
 public class CachedConnectionProvider implements ConnectionProvider {
