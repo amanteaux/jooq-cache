@@ -26,27 +26,35 @@ class Utils {
 	 * @param referencedTables The tables referenced in the query
 	 * @param query
 	 */
-	@SuppressWarnings("unchecked")
 	static void index(Cache tableIndexes, Set<Table<?>> referencedTables, String query) {
 		for(Table<?> tableReference : referencedTables) {
-			String tableReferenceName = tableReference.getName();
-			
-			if(tableIndexes.get(tableReferenceName) == null) {
-				// the synchronized is mandatory else a link can be overridden
-				synchronized (tableIndexes) {
-					if(tableIndexes.get(tableReferenceName) == null) {
-						CopyOnWriteArraySet<String> links = new CopyOnWriteArraySet<String>();
-						links.add(query);
-						tableIndexes.put(tableReferenceName, links);
-						continue;
-					}
+			index(tableIndexes, tableReference.getName(), query);
+		}
+	}
+	
+	/**
+	 * Add to the index cache a table referenced in a query
+	 * @param tableIndexes The table index which will be updated
+	 * @param tableReference A table referenced in the query
+	 * @param query
+	 */
+	@SuppressWarnings("unchecked")
+	static void index(Cache tableIndexes, String tableReferenceName, String query) {
+		if(tableIndexes.get(tableReferenceName) == null) {
+			// the synchronized is mandatory else a link can be overridden
+			synchronized (tableIndexes) {
+				if(tableIndexes.get(tableReferenceName) == null) {
+					CopyOnWriteArraySet<String> links = new CopyOnWriteArraySet<String>();
+					links.add(query);
+					tableIndexes.put(tableReferenceName, links);
+					return;
 				}
 			}
-			
-			Set<String> links = (Set<String>) tableIndexes.get(tableReference.getName());
-			if(!links.contains(query)) {
-				links.add(query);
-			}
+		}
+		
+		Set<String> links = (Set<String>) tableIndexes.get(tableReferenceName);
+		if(!links.contains(query)) {
+			links.add(query);
 		}
 	}
 	
