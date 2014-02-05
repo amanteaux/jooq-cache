@@ -41,7 +41,7 @@ public class CacheQueryInformation {
 	 * 
 	 * @return
 	 */
-	public Set<Table<?>> getLinkedTables() {
+	public Set<Table<?>> getReferencedTables() {
 		return referencedTables;
 	}
 

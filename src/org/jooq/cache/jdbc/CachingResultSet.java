@@ -86,7 +86,7 @@ class CachingResultSet implements ResultSet {
 		
 		addRowIfNecessary();
 
-		Utils.cache(queryInformation.getCacheProvider(), queryInformation.getLinkedTables(), queryInformation.getQuery(), queryInformation.getQueryParameters(), new CachedData(Collections.unmodifiableList(rows), fields));
+		Utils.cache(queryInformation.getCacheProvider(), queryInformation.getReferencedTables(), queryInformation.getQuery(), queryInformation.getQueryParameters(), new CachedData(Collections.unmodifiableList(rows), fields));
 		
 	}
 
