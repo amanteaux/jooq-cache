@@ -9,9 +9,9 @@ import org.jooq.VisitListener;
 
 public class CachedVisitListener implements VisitListener {
 
-	private final Set<Table<?>> referencedTables;
+	private final Set<String> referencedTables;
 
-	public CachedVisitListener(Set<Table<?>> referencedTables) {
+	public CachedVisitListener(Set<String> referencedTables) {
 		this.referencedTables = referencedTables;
 	}
 
@@ -23,7 +23,7 @@ public class CachedVisitListener implements VisitListener {
 			|| context.clause() == Clause.CUSTOM)
 			&& context.queryPart() instanceof Table<?>
 		) {
-			referencedTables.add((Table<?>) context.queryPart());
+			referencedTables.add(((Table<?>)context.queryPart()).getName());
 		}
 	}
 

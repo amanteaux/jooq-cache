@@ -3,7 +3,6 @@ package org.jooq.cache.jdbc;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.jooq.Table;
 import org.jooq.cache.Cache;
 import org.jooq.cache.CacheManager;
 import org.jooq.cache.CacheProvider;
@@ -14,7 +13,7 @@ class Utils {
 		return (CachedData) CacheManager.fetchByQuery(cacheProvider, query).get(queryParameters);
 	}
 
-	static void cache(CacheProvider cacheProvider, Set<Table<?>> referencedTables, String query, String queryParameters, CachedData cachedData) {
+	static void cache(CacheProvider cacheProvider, Set<String> referencedTables, String query, String queryParameters, CachedData cachedData) {
 		CacheManager.fetchByQuery(cacheProvider, query).put(queryParameters, cachedData);
 		
 		index(CacheManager.tableIndex(cacheProvider), referencedTables, query);
@@ -26,9 +25,9 @@ class Utils {
 	 * @param referencedTables The tables referenced in the query
 	 * @param query
 	 */
-	static void index(Cache tableIndexes, Set<Table<?>> referencedTables, String query) {
-		for(Table<?> tableReference : referencedTables) {
-			index(tableIndexes, tableReference.getName(), query);
+	static void index(Cache tableIndexes, Set<String> referencedTables, String query) {
+		for(String tableReference : referencedTables) {
+			index(tableIndexes, tableReference, query);
 		}
 	}
 	

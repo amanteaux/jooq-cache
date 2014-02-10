@@ -4,22 +4,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jooq.Table;
 import org.jooq.VisitListener;
 import org.jooq.cache.CacheProvider;
 
 public class CacheQueryInformation {
  
 	private final String query;
-	private final String queryParameters; // TODO à virer
+	private final String queryParameters;
 	private final VisitListener visitListener;
-	private final Set<Table<?>> referencedTables;
+	private final Set<String> referencedTables;
 	private final CacheProvider cacheProvider; 
 
 	public CacheQueryInformation(String query, List<Object> queryParameters, CacheProvider cacheProvider) {
 		this.query = query;
 		this.queryParameters = queryParameters.toString();
-		this.referencedTables = new HashSet<Table<?>>();
+		this.referencedTables = new HashSet<String>();
 		this.cacheProvider = cacheProvider;
 		this.visitListener = new CachedVisitListener(referencedTables);
 	}
@@ -41,7 +40,7 @@ public class CacheQueryInformation {
 	 * 
 	 * @return
 	 */
-	public Set<Table<?>> getReferencedTables() {
+	public Set<String> getReferencedTables() {
 		return referencedTables;
 	}
 
