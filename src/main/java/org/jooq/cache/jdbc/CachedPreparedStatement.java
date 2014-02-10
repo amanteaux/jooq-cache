@@ -42,10 +42,13 @@ class CachedPreparedStatement implements PreparedStatement {
 
 	@Override
 	public boolean execute() throws SQLException {
-		cachedData = Utils.cachedData(queryInformation.getCacheProvider(), queryInformation.getQuery(), queryInformation.getQueryParameters());
-		
-		if(cachedData != null && log.isDebugEnabled()) {
-			log.debug("Cache is used for this query");
+		// [#8] Do not cache a query result when a connection is set to autocommit = false
+		if(delegate.getConnection().getAutoCommit()) {
+			cachedData = Utils.cachedData(queryInformation.getCacheProvider(), queryInformation.getQuery(), queryInformation.getQueryParameters());
+			
+			if(cachedData != null && log.isDebugEnabled()) {
+				log.debug("Cache is used for this query");
+			}
 		}
 		
 		return cachedData != null ? true : delegate.execute();

@@ -89,8 +89,6 @@ public class CachedConnection implements Connection {
 		return delegate.createStatement();
 	}
 
-
-
 	@Override
 	public CallableStatement prepareCall(String sql) throws SQLException {
 		return delegate.prepareCall(sql);
@@ -236,8 +234,6 @@ public class CachedConnection implements Connection {
 				resultSetHoldability);
 	}
 
-
-
 	@Override
 	public CallableStatement prepareCall(String sql, int resultSetType,
 			int resultSetConcurrency, int resultSetHoldability)
@@ -245,7 +241,6 @@ public class CachedConnection implements Connection {
 		return delegate.prepareCall(sql, resultSetType, resultSetConcurrency,
 				resultSetHoldability);
 	}
-
 
 	@Override
 	public Clob createClob() throws SQLException {
@@ -305,6 +300,5 @@ public class CachedConnection implements Connection {
 			throws SQLException {
 		return delegate.createStruct(typeName, attributes);
 	}
-
 
 }
