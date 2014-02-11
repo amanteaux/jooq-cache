@@ -39,9 +39,13 @@ class CachedPreparedStatement implements PreparedStatement {
 		this.queryInformation = queryInformation;
 		this.cachedData = null;
 	}
-
-	@Override
-	public boolean execute() throws SQLException {
+	
+	/**
+	 * Fetch and store in the cachedPrepareStatement the cached data corresponding to the query that is being executed
+	 * @return The cached data corresponding to the query that is being executed if it exists, else null
+	 * @throws SQLException
+	 */
+	private CachedData cachedData() throws SQLException {
 		// [#8] Do not cache a query result when a connection is set to autocommit = false
 		if(delegate.getConnection().getAutoCommit()) {
 			cachedData = Utils.cachedData(queryInformation.getCacheProvider(), queryInformation.getQuery(), queryInformation.getQueryParameters());
@@ -51,29 +55,38 @@ class CachedPreparedStatement implements PreparedStatement {
 			}
 		}
 		
-		return cachedData != null ? true : delegate.execute();
+		return cachedData;
 	}
 
 	@Override
-	public ResultSet getResultSet() throws SQLException {
-		return cachedData != null ? cachedData.newResultSet() : new CachingResultSet(delegate.getResultSet(), queryInformation);
+	public boolean execute() throws SQLException {
+		return cachedData() != null ? true : delegate.execute();
 	}
-
-	// delegate calls
 
 	@Override
 	public ResultSet executeQuery(String sql) throws SQLException {
+		if(cachedData() != null) {
+			return getResultSet();
+		}
 		return delegate.executeQuery(sql);
 	}
 
 	@Override
-	public <T> T unwrap(Class<T> iface) throws SQLException {
-		return delegate.unwrap(iface);
+	public ResultSet executeQuery() throws SQLException {
+		execute();
+		return getResultSet();
 	}
+	
+	@Override
+	public ResultSet getResultSet() throws SQLException {
+		return cachedData != null ? cachedData.newResultSet() : new CachingResultSet(delegate.getResultSet(), queryInformation);
+	}
+	
+	// delegate calls
 
 	@Override
-	public ResultSet executeQuery() throws SQLException {
-		return delegate.executeQuery();
+	public <T> T unwrap(Class<T> iface) throws SQLException {
+		return delegate.unwrap(iface);
 	}
 
 	@Override
@@ -568,6 +581,5 @@ class CachedPreparedStatement implements PreparedStatement {
 	public void setNClob(int parameterIndex, Reader reader) throws SQLException {
 		delegate.setNClob(parameterIndex, reader);
 	}
-
 
 }
