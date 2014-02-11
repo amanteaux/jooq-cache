@@ -8,6 +8,7 @@ import org.jooq.Table;
 import org.jooq.UpdatableRecord;
 import org.jooq.conf.ParamType;
 
+// TODO should not extend ExtendedDAOImpl because update, delete and insert methods are final
 public abstract class CachedDAOImpl<R extends UpdatableRecord<R>, P, T> extends ExtendedDAOImpl<R, P, T> {
 
 	public CachedDAOImpl(final Table<R> table, final Class<P> type) {
@@ -33,6 +34,9 @@ public abstract class CachedDAOImpl<R extends UpdatableRecord<R>, P, T> extends 
 		//@formatter:on
 		return query.fetch();
 	}
+	
+
+	// TODO implements update, insert and delete to clear the cache
 
 	public CachedConfiguration cachedConfiguration() {
 		return (CachedConfiguration) configuration();
