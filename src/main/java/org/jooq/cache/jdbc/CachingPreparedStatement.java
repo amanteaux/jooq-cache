@@ -26,15 +26,20 @@ import java.util.Calendar;
 import org.jooq.impl.CacheQueryInformation;
 import org.jooq.tools.JooqLogger;
 
-class CachedPreparedStatement implements PreparedStatement {
+/**
+ * A PreparedStatement that will either provide a CachingResultSet or a CachedResultSet 
+ * @author Aurélien Manteaux
+ *
+ */
+class CachingPreparedStatement implements PreparedStatement {
 
-	private static final JooqLogger log   = JooqLogger.getLogger(CachedPreparedStatement.class);
+	private static final JooqLogger log   = JooqLogger.getLogger(CachingPreparedStatement.class);
 	
 	private final PreparedStatement delegate;
 	private final CacheQueryInformation queryInformation;
 	private CachedData cachedData;
 
-	CachedPreparedStatement(PreparedStatement delegate, CacheQueryInformation queryInformation) throws SQLException {
+	CachingPreparedStatement(PreparedStatement delegate, CacheQueryInformation queryInformation) throws SQLException {
 		this.delegate = delegate;
 		this.queryInformation = queryInformation;
 		this.cachedData = null;
@@ -63,6 +68,12 @@ class CachedPreparedStatement implements PreparedStatement {
 		return cachedData() != null ? true : delegate.execute();
 	}
 
+	/**
+	 * This method should not be called, but if it is the case :<br />
+	 * - maybe the SQL query result in already cached : great the cached result is returned,
+	 * - the SQL query result is not cached : it is weird that a custom SQL query is run on a CachingPreparedStatement<br />
+	 * 	 => the query is executed and its result is not cached 
+	 */
 	@Override
 	public ResultSet executeQuery(String sql) throws SQLException {
 		if(cachedData() != null) {

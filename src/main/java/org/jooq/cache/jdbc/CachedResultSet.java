@@ -122,7 +122,7 @@ class CachedResultSet implements ResultSet {
 
 	@Override
 	public InputStream getAsciiStream(int columnIndex) throws SQLException {
-		// TODO Auto-generated method stub
+		// TODO get string and convert it to inputstream
 		return null;
 	}
 

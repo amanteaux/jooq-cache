@@ -1,5 +1,6 @@
 package org.jooq.cache.jdbc;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -29,12 +30,10 @@ import java.util.Map;
 import org.jooq.impl.CacheQueryInformation;
 
 /**
- * TODO Cacher avec tous les getter<br/>
- * <br/>
  * A ResultSet that caches all the data the pass trough.<br/>
  * The cached data are written to the query cache once the ResultSet is closed.
  * 
- * @author amanteaux
+ * @author Aurélien Manteaux
  * 
  */
 class CachingResultSet implements ResultSet {
@@ -50,7 +49,7 @@ class CachingResultSet implements ResultSet {
 		this.delegate = delegate;
 		this.queryInformation = queryInformation;
 
-		// columns
+		// fetch the columns meta-data
 		ResultSetMetaData metaData = delegate.getMetaData();
 		int columnCount = metaData.getColumnCount();
 		Map<String, Integer> fields = new HashMap<String, Integer>(columnCount);
@@ -63,6 +62,9 @@ class CachingResultSet implements ResultSet {
 		this.row = null;
 	}
 
+	/**
+	 * If the current row is not null, add it to the result rows 
+	 */
 	private void addRowIfNecessary() {
 		if(row != null) {
 			rows.add(Collections.unmodifiableList(row));
@@ -87,12 +89,16 @@ class CachingResultSet implements ResultSet {
 		addRowIfNecessary();
 
 		Utils.cache(queryInformation.getCacheProvider(), queryInformation.getReferencedTables(), queryInformation.getQuery(), queryInformation.getQueryParameters(), new CachedData(Collections.unmodifiableList(rows), fields));
-		
 	}
 
 	@Override
 	public boolean wasNull() throws SQLException {
-		return delegate.wasNull();
+		boolean wasNull = delegate.wasNull();
+		if(wasNull) {
+			rows.set(rows.size()-1, null);
+		}
+		
+		return wasNull;
 	}
 
 	@Override
@@ -151,40 +157,53 @@ class CachingResultSet implements ResultSet {
 		return value;
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
+	@Deprecated
 	public BigDecimal getBigDecimal(int columnIndex, int scale)
 			throws SQLException {
-		return delegate.getBigDecimal(columnIndex, scale);
+		BigDecimal value = delegate.getBigDecimal(columnIndex, scale);
+		row.add(value);
+		return value;
 	}
 
 	@Override
 	public byte[] getBytes(int columnIndex) throws SQLException {
-		return delegate.getBytes(columnIndex);
+		byte[] value = delegate.getBytes(columnIndex);
+		row.add(value);
+		return value;
 	}
 
 	@Override
 	public Date getDate(int columnIndex) throws SQLException {
-		return delegate.getDate(columnIndex);
+		Date value = delegate.getDate(columnIndex);
+		row.add(value);
+		return value;
 	}
 
 	@Override
 	public Time getTime(int columnIndex) throws SQLException {
-		return delegate.getTime(columnIndex);
+		Time value = delegate.getTime(columnIndex);
+		row.add(value);
+		return value;
 	}
 
 	@Override
 	public Timestamp getTimestamp(int columnIndex) throws SQLException {
-		return delegate.getTimestamp(columnIndex);
+		Timestamp value = delegate.getTimestamp(columnIndex);
+		row.add(value);
+		return value;
 	}
 
 	@Override
 	public InputStream getAsciiStream(int columnIndex) throws SQLException {
-		return delegate.getAsciiStream(columnIndex);
+		String value = getString(columnIndex);
+		return new ByteArrayInputStream(value.getBytes());
 	}
 
-	@SuppressWarnings("deprecation")
+	// TODO finish implementation from here
+	
 	@Override
+	@Deprecated
 	public InputStream getUnicodeStream(int columnIndex) throws SQLException {
 		return delegate.getUnicodeStream(columnIndex);
 	}
@@ -238,8 +257,8 @@ class CachingResultSet implements ResultSet {
 		return delegate.getDouble(columnLabel);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
+	@Deprecated
 	public BigDecimal getBigDecimal(String columnLabel, int scale)
 			throws SQLException {
 		return delegate.getBigDecimal(columnLabel, scale);
@@ -270,8 +289,8 @@ class CachingResultSet implements ResultSet {
 		return delegate.getAsciiStream(columnLabel);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
+	@Deprecated
 	public InputStream getUnicodeStream(String columnLabel) throws SQLException {
 		return delegate.getUnicodeStream(columnLabel);
 	}
@@ -335,6 +354,8 @@ class CachingResultSet implements ResultSet {
 	public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
 		return delegate.getBigDecimal(columnLabel);
 	}
+	
+	// TODO generate exception instead of calling delegate
 
 	@Override
 	public boolean isBeforeFirst() throws SQLException {

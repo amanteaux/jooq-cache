@@ -4,6 +4,11 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Describe a chached query result with its fields and its rows
+ * @author Aurélien Manteaux
+ *
+ */
 public class CachedData implements Serializable {
 
 	private static final long serialVersionUID = 1077350001901121366L;
