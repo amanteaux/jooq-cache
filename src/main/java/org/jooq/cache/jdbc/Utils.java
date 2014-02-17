@@ -56,5 +56,5 @@ class Utils {
 			links.add(query);
 		}
 	}
-	
+
 }

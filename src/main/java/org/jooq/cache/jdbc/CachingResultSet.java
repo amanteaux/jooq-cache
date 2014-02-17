@@ -1,7 +1,9 @@
 package org.jooq.cache.jdbc;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
@@ -41,9 +43,11 @@ class CachingResultSet implements ResultSet {
 	private final ResultSet delegate;
 	private final CacheQueryInformation queryInformation;
 
-	private final List<List<Object>> rows;
+	private final List<Object[]> rows;
 	private final Map<String, Integer> fields;
-	private List<Object> row;
+	private Object[] row;
+	
+	private final int cols;
 
 	CachingResultSet(ResultSet delegate, CacheQueryInformation queryInformation) throws SQLException {
 		this.delegate = delegate;
@@ -57,9 +61,45 @@ class CachingResultSet implements ResultSet {
 			fields.put(metaData.getColumnName(i), i);
 		}
 		this.fields = Collections.unmodifiableMap(fields);
+		this.cols = fields.size();
 		
-		this.rows = new ArrayList<List<Object>>();
+		this.rows = new ArrayList<Object[]>();
 		this.row = null;
+	}
+	
+	// utils
+	
+	private<T> T cache(T value, int columnIndex) {
+		row[columnIndex -1] = value;
+		return value;
+	}
+	
+	private<T> T cache(T value, String columnLabel) {
+		return cache(value, fields.get(columnLabel));
+	}
+	
+	private InputStream cacheAndStream(InputStream toCache, int columnIndex) throws SQLException {
+		try {
+			return new ByteArrayInputStream(cache(IOUtils.toByteArray(toCache), columnIndex));
+		} catch (IOException e) {
+			throw new SQLException(e);
+		}
+	}
+	
+	private InputStream cacheAndStream(InputStream toCache, String columnLabel) throws SQLException {
+		return cacheAndStream(toCache, fields.get(columnLabel));
+	}
+	
+	private Reader cacheAndStream(Reader toCache, int columnIndex) throws SQLException {
+		try {
+			return new InputStreamReader(new ByteArrayInputStream(cache(IOUtils.toByteArray(toCache), columnIndex)));
+		} catch (IOException e) {
+			throw new SQLException(e);
+		}
+	}
+	
+	private Reader cacheAndStream(Reader toCache, String columnLabel) throws SQLException {
+		return cacheAndStream(toCache, fields.get(columnLabel));
 	}
 
 	/**
@@ -67,9 +107,11 @@ class CachingResultSet implements ResultSet {
 	 */
 	private void addRowIfNecessary() {
 		if(row != null) {
-			rows.add(Collections.unmodifiableList(row));
+			rows.add(row);
 		}
 	}
+	
+	// impl
 	
 	@Override
 	public boolean next() throws SQLException {
@@ -78,7 +120,7 @@ class CachingResultSet implements ResultSet {
 			row = null;
 			return false;
 		}
-		row = new ArrayList<Object>();
+		row = new Object[cols];
 		return true;
 	}
 
@@ -101,1023 +143,952 @@ class CachingResultSet implements ResultSet {
 		return wasNull;
 	}
 
+	// caching
+	
 	@Override
 	public String getString(int columnIndex) throws SQLException {
-		String value = delegate.getString(columnIndex);
-		row.add(value);
-		return value;
+		return cache(delegate.getString(columnIndex), columnIndex);
 	}
 
 	@Override
 	public boolean getBoolean(int columnIndex) throws SQLException {
-		boolean value = delegate.getBoolean(columnIndex);
-		row.add(value);
-		return value;
+		return cache(delegate.getBoolean(columnIndex), columnIndex);
 	}
 
 	@Override
 	public byte getByte(int columnIndex) throws SQLException {
-		byte value = delegate.getByte(columnIndex);
-		row.add(value);
-		return value;
+		return cache(delegate.getByte(columnIndex), columnIndex);
 	}
 
 	@Override
 	public short getShort(int columnIndex) throws SQLException {
-		short value = delegate.getShort(columnIndex);
-		row.add(value);
-		return value;
+		return cache(delegate.getShort(columnIndex), columnIndex);
 	}
 
 	@Override
 	public int getInt(int columnIndex) throws SQLException {
-		int value = delegate.getInt(columnIndex);
-		row.add(value);
-		return value;
+		return cache(delegate.getInt(columnIndex), columnIndex);
 	}
 
 	@Override
 	public long getLong(int columnIndex) throws SQLException {
-		Long value = delegate.getLong(columnIndex);
-		row.add(value);
-		return value;
+		return cache(delegate.getLong(columnIndex), columnIndex);
 	}
 
 	@Override
 	public float getFloat(int columnIndex) throws SQLException {
-		float value = delegate.getFloat(columnIndex);
-		row.add(value);
-		return value;
+		return cache(delegate.getFloat(columnIndex), columnIndex);
 	}
 
 	@Override
 	public double getDouble(int columnIndex) throws SQLException {
-		double value = delegate.getDouble(columnIndex);
-		row.add(value);
-		return value;
+		return cache(delegate.getDouble(columnIndex), columnIndex);
 	}
 
 	@Override
 	@Deprecated
-	public BigDecimal getBigDecimal(int columnIndex, int scale)
-			throws SQLException {
-		BigDecimal value = delegate.getBigDecimal(columnIndex, scale);
-		row.add(value);
-		return value;
+	public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
+		return cache(delegate.getBigDecimal(columnIndex, scale), columnIndex);
 	}
 
 	@Override
 	public byte[] getBytes(int columnIndex) throws SQLException {
-		byte[] value = delegate.getBytes(columnIndex);
-		row.add(value);
-		return value;
+		return cache(delegate.getBytes(columnIndex), columnIndex);
 	}
 
 	@Override
 	public Date getDate(int columnIndex) throws SQLException {
-		Date value = delegate.getDate(columnIndex);
-		row.add(value);
-		return value;
+		return cache(delegate.getDate(columnIndex), columnIndex);
 	}
 
 	@Override
 	public Time getTime(int columnIndex) throws SQLException {
-		Time value = delegate.getTime(columnIndex);
-		row.add(value);
-		return value;
+		return cache(delegate.getTime(columnIndex), columnIndex);
 	}
 
 	@Override
 	public Timestamp getTimestamp(int columnIndex) throws SQLException {
-		Timestamp value = delegate.getTimestamp(columnIndex);
-		row.add(value);
-		return value;
+		return cache(delegate.getTimestamp(columnIndex), columnIndex);
 	}
 
+	
 	@Override
 	public InputStream getAsciiStream(int columnIndex) throws SQLException {
-		String value = getString(columnIndex);
-		return new ByteArrayInputStream(value.getBytes());
+		return cacheAndStream(delegate.getAsciiStream(columnIndex), columnIndex);
 	}
 
-	// TODO finish implementation from here
-	
 	@Override
 	@Deprecated
 	public InputStream getUnicodeStream(int columnIndex) throws SQLException {
-		return delegate.getUnicodeStream(columnIndex);
+		return cacheAndStream(delegate.getUnicodeStream(columnIndex), columnIndex);
 	}
 
 	@Override
 	public InputStream getBinaryStream(int columnIndex) throws SQLException {
-		return delegate.getBinaryStream(columnIndex);
+		return cacheAndStream(delegate.getBinaryStream(columnIndex), columnIndex);
 	}
 
 	@Override
 	public String getString(String columnLabel) throws SQLException {
-		String value = delegate.getString(columnLabel);
-		row.add(value);
-		return value;
+		return cache(delegate.getString(columnLabel), columnLabel);
 	}
 
 	@Override
 	public boolean getBoolean(String columnLabel) throws SQLException {
-		return delegate.getBoolean(columnLabel);
+		return cache(delegate.getBoolean(columnLabel), columnLabel);
 	}
 
 	@Override
 	public byte getByte(String columnLabel) throws SQLException {
-		return delegate.getByte(columnLabel);
+		return cache(delegate.getByte(columnLabel), columnLabel);
 	}
 
 	@Override
 	public short getShort(String columnLabel) throws SQLException {
-		return delegate.getShort(columnLabel);
+		return cache(delegate.getShort(columnLabel), columnLabel);
 	}
 
 	@Override
 	public int getInt(String columnLabel) throws SQLException {
-		return delegate.getInt(columnLabel);
+		return cache(delegate.getInt(columnLabel), columnLabel);
 	}
 
 	@Override
 	public long getLong(String columnLabel) throws SQLException {
-		Long value = delegate.getLong(columnLabel);
-		row.add(value);
-		return value;
+		return cache(delegate.getLong(columnLabel), columnLabel);
 	}
 
 	@Override
 	public float getFloat(String columnLabel) throws SQLException {
-		return delegate.getFloat(columnLabel);
+		return cache(delegate.getFloat(columnLabel), columnLabel);
 	}
 
 	@Override
 	public double getDouble(String columnLabel) throws SQLException {
-		return delegate.getDouble(columnLabel);
+		return cache(delegate.getDouble(columnLabel), columnLabel);
 	}
 
 	@Override
 	@Deprecated
-	public BigDecimal getBigDecimal(String columnLabel, int scale)
-			throws SQLException {
-		return delegate.getBigDecimal(columnLabel, scale);
+	public BigDecimal getBigDecimal(String columnLabel, int scale) throws SQLException {
+		return cache(delegate.getBigDecimal(columnLabel, scale), columnLabel);
 	}
 
 	@Override
 	public byte[] getBytes(String columnLabel) throws SQLException {
-		return delegate.getBytes(columnLabel);
+		return cache(delegate.getBytes(columnLabel), columnLabel);
 	}
 
 	@Override
 	public Date getDate(String columnLabel) throws SQLException {
-		return delegate.getDate(columnLabel);
+		return cache(delegate.getDate(columnLabel), columnLabel);
 	}
 
 	@Override
 	public Time getTime(String columnLabel) throws SQLException {
-		return delegate.getTime(columnLabel);
+		return cache(delegate.getTime(columnLabel), columnLabel);
 	}
 
 	@Override
 	public Timestamp getTimestamp(String columnLabel) throws SQLException {
-		return delegate.getTimestamp(columnLabel);
+		return cache(delegate.getTimestamp(columnLabel), columnLabel);
 	}
 
 	@Override
 	public InputStream getAsciiStream(String columnLabel) throws SQLException {
-		return delegate.getAsciiStream(columnLabel);
+		return cacheAndStream(delegate.getAsciiStream(columnLabel), columnLabel);
 	}
 
 	@Override
 	@Deprecated
 	public InputStream getUnicodeStream(String columnLabel) throws SQLException {
-		return delegate.getUnicodeStream(columnLabel);
+		return cacheAndStream(delegate.getUnicodeStream(columnLabel), columnLabel);
 	}
 
 	@Override
 	public InputStream getBinaryStream(String columnLabel) throws SQLException {
-		return delegate.getBinaryStream(columnLabel);
-	}
-
-	@Override
-	public SQLWarning getWarnings() throws SQLException {
-		return delegate.getWarnings();
-	}
-
-	@Override
-	public void clearWarnings() throws SQLException {
-		delegate.clearWarnings();
-	}
-
-	@Override
-	public String getCursorName() throws SQLException {
-		return delegate.getCursorName();
-	}
-
-	@Override
-	public ResultSetMetaData getMetaData() throws SQLException {
-		return delegate.getMetaData();
+		return cacheAndStream(delegate.getBinaryStream(columnLabel), columnLabel);
 	}
 
 	@Override
 	public Object getObject(int columnIndex) throws SQLException {
-		return delegate.getObject(columnIndex);
+		return cache(delegate.getObject(columnIndex), columnIndex);
 	}
 
 	@Override
 	public Object getObject(String columnLabel) throws SQLException {
-		return delegate.getObject(columnLabel);
-	}
-
-	@Override
-	public int findColumn(String columnLabel) throws SQLException {
-		return delegate.findColumn(columnLabel);
+		return cache(delegate.getObject(columnLabel), columnLabel);
 	}
 
 	@Override
 	public Reader getCharacterStream(int columnIndex) throws SQLException {
-		return delegate.getCharacterStream(columnIndex);
+		return cacheAndStream(delegate.getCharacterStream(columnIndex), columnIndex);
 	}
 
 	@Override
 	public Reader getCharacterStream(String columnLabel) throws SQLException {
-		return delegate.getCharacterStream(columnLabel);
+		return cacheAndStream(delegate.getCharacterStream(columnLabel), columnLabel);
 	}
 
 	@Override
 	public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
-		return delegate.getBigDecimal(columnIndex);
+		return cache(delegate.getBigDecimal(columnIndex), columnIndex);
 	}
 
 	@Override
 	public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
-		return delegate.getBigDecimal(columnLabel);
+		return cache(delegate.getBigDecimal(columnLabel), columnLabel);
 	}
 	
-	// TODO generate exception instead of calling delegate
-
-	@Override
-	public boolean isBeforeFirst() throws SQLException {
-		return delegate.isBeforeFirst();
-	}
-
-	@Override
-	public boolean isAfterLast() throws SQLException {
-		return delegate.isAfterLast();
-	}
-
-	@Override
-	public boolean isFirst() throws SQLException {
-		return delegate.isFirst();
-	}
-
-	@Override
-	public boolean isLast() throws SQLException {
-		return delegate.isLast();
-	}
-
-	@Override
-	public void beforeFirst() throws SQLException {
-		delegate.beforeFirst();
-	}
-
-	@Override
-	public void afterLast() throws SQLException {
-		delegate.afterLast();
-	}
-
-	@Override
-	public boolean first() throws SQLException {
-		return delegate.first();
-	}
-
-	@Override
-	public boolean last() throws SQLException {
-		return delegate.last();
-	}
-
-	@Override
-	public int getRow() throws SQLException {
-		return delegate.getRow();
-	}
-
-	@Override
-	public boolean absolute(int row) throws SQLException {
-		return delegate.absolute(row);
-	}
-
-	@Override
-	public boolean relative(int rows) throws SQLException {
-		return delegate.relative(rows);
-	}
-
-	@Override
-	public boolean previous() throws SQLException {
-		return delegate.previous();
-	}
-
-	@Override
-	public <T> T unwrap(Class<T> iface) throws SQLException {
-		return delegate.unwrap(iface);
-	}
-
-	@Override
-	public boolean isWrapperFor(Class<?> iface) throws SQLException {
-		return delegate.isWrapperFor(iface);
-	}
-
-	@Override
-	public void setFetchDirection(int direction) throws SQLException {
-		delegate.setFetchDirection(direction);
-	}
-
-	@Override
-	public int getFetchDirection() throws SQLException {
-		return delegate.getFetchDirection();
-	}
-
-	@Override
-	public void setFetchSize(int rows) throws SQLException {
-		delegate.setFetchSize(rows);
-	}
-
-	@Override
-	public int getFetchSize() throws SQLException {
-		return delegate.getFetchSize();
-	}
-
-	@Override
-	public int getType() throws SQLException {
-		return delegate.getType();
-	}
-
-	@Override
-	public int getConcurrency() throws SQLException {
-		return delegate.getConcurrency();
-	}
-
-	@Override
-	public boolean rowUpdated() throws SQLException {
-		return delegate.rowUpdated();
-	}
-
-	@Override
-	public boolean rowInserted() throws SQLException {
-		return delegate.rowInserted();
-	}
-
-	@Override
-	public boolean rowDeleted() throws SQLException {
-		return delegate.rowDeleted();
-	}
-
-	@Override
-	public void updateNull(int columnIndex) throws SQLException {
-		delegate.updateNull(columnIndex);
-	}
-
-	@Override
-	public void updateBoolean(int columnIndex, boolean x) throws SQLException {
-		delegate.updateBoolean(columnIndex, x);
-	}
-
-	@Override
-	public void updateByte(int columnIndex, byte x) throws SQLException {
-		delegate.updateByte(columnIndex, x);
-	}
-
-	@Override
-	public void updateShort(int columnIndex, short x) throws SQLException {
-		delegate.updateShort(columnIndex, x);
-	}
-
-	@Override
-	public void updateInt(int columnIndex, int x) throws SQLException {
-		delegate.updateInt(columnIndex, x);
-	}
-
-	@Override
-	public void updateLong(int columnIndex, long x) throws SQLException {
-		delegate.updateLong(columnIndex, x);
-	}
-
-	@Override
-	public void updateFloat(int columnIndex, float x) throws SQLException {
-		delegate.updateFloat(columnIndex, x);
-	}
-
-	@Override
-	public void updateDouble(int columnIndex, double x) throws SQLException {
-		delegate.updateDouble(columnIndex, x);
-	}
-
-	@Override
-	public void updateBigDecimal(int columnIndex, BigDecimal x)
-			throws SQLException {
-		delegate.updateBigDecimal(columnIndex, x);
-	}
-
-	@Override
-	public void updateString(int columnIndex, String x) throws SQLException {
-		delegate.updateString(columnIndex, x);
-	}
-
-	@Override
-	public void updateBytes(int columnIndex, byte[] x) throws SQLException {
-		delegate.updateBytes(columnIndex, x);
-	}
-
-	@Override
-	public void updateDate(int columnIndex, Date x) throws SQLException {
-		delegate.updateDate(columnIndex, x);
-	}
-
-	@Override
-	public void updateTime(int columnIndex, Time x) throws SQLException {
-		delegate.updateTime(columnIndex, x);
-	}
-
-	@Override
-	public void updateTimestamp(int columnIndex, Timestamp x)
-			throws SQLException {
-		delegate.updateTimestamp(columnIndex, x);
-	}
-
-	@Override
-	public void updateAsciiStream(int columnIndex, InputStream x, int length)
-			throws SQLException {
-		delegate.updateAsciiStream(columnIndex, x, length);
-	}
-
-	@Override
-	public void updateBinaryStream(int columnIndex, InputStream x, int length)
-			throws SQLException {
-		delegate.updateBinaryStream(columnIndex, x, length);
-	}
-
-	@Override
-	public void updateCharacterStream(int columnIndex, Reader x, int length)
-			throws SQLException {
-		delegate.updateCharacterStream(columnIndex, x, length);
-	}
-
-	@Override
-	public void updateObject(int columnIndex, Object x, int scaleOrLength)
-			throws SQLException {
-		delegate.updateObject(columnIndex, x, scaleOrLength);
-	}
-
-	@Override
-	public void updateObject(int columnIndex, Object x) throws SQLException {
-		delegate.updateObject(columnIndex, x);
-	}
-
-	@Override
-	public void updateNull(String columnLabel) throws SQLException {
-		delegate.updateNull(columnLabel);
-	}
-
-	@Override
-	public void updateBoolean(String columnLabel, boolean x)
-			throws SQLException {
-		delegate.updateBoolean(columnLabel, x);
-	}
-
-	@Override
-	public void updateByte(String columnLabel, byte x) throws SQLException {
-		delegate.updateByte(columnLabel, x);
-	}
-
-	@Override
-	public void updateShort(String columnLabel, short x) throws SQLException {
-		delegate.updateShort(columnLabel, x);
-	}
-
-	@Override
-	public void updateInt(String columnLabel, int x) throws SQLException {
-		delegate.updateInt(columnLabel, x);
-	}
-
-	@Override
-	public void updateLong(String columnLabel, long x) throws SQLException {
-		delegate.updateLong(columnLabel, x);
-	}
-
-	@Override
-	public void updateFloat(String columnLabel, float x) throws SQLException {
-		delegate.updateFloat(columnLabel, x);
-	}
-
-	@Override
-	public void updateDouble(String columnLabel, double x) throws SQLException {
-		delegate.updateDouble(columnLabel, x);
-	}
-
-	@Override
-	public void updateBigDecimal(String columnLabel, BigDecimal x)
-			throws SQLException {
-		delegate.updateBigDecimal(columnLabel, x);
-	}
-
-	@Override
-	public void updateString(String columnLabel, String x) throws SQLException {
-		delegate.updateString(columnLabel, x);
-	}
-
-	@Override
-	public void updateBytes(String columnLabel, byte[] x) throws SQLException {
-		delegate.updateBytes(columnLabel, x);
-	}
-
-	@Override
-	public void updateDate(String columnLabel, Date x) throws SQLException {
-		delegate.updateDate(columnLabel, x);
-	}
-
-	@Override
-	public void updateTime(String columnLabel, Time x) throws SQLException {
-		delegate.updateTime(columnLabel, x);
-	}
-
-	@Override
-	public void updateTimestamp(String columnLabel, Timestamp x)
-			throws SQLException {
-		delegate.updateTimestamp(columnLabel, x);
-	}
-
-	@Override
-	public void updateAsciiStream(String columnLabel, InputStream x, int length)
-			throws SQLException {
-		delegate.updateAsciiStream(columnLabel, x, length);
-	}
-
-	@Override
-	public void updateBinaryStream(String columnLabel, InputStream x, int length)
-			throws SQLException {
-		delegate.updateBinaryStream(columnLabel, x, length);
-	}
-
-	@Override
-	public void updateCharacterStream(String columnLabel, Reader reader,
-			int length) throws SQLException {
-		delegate.updateCharacterStream(columnLabel, reader, length);
-	}
-
-	@Override
-	public void updateObject(String columnLabel, Object x, int scaleOrLength)
-			throws SQLException {
-		delegate.updateObject(columnLabel, x, scaleOrLength);
-	}
-
-	@Override
-	public void updateObject(String columnLabel, Object x) throws SQLException {
-		delegate.updateObject(columnLabel, x);
-	}
-
-	@Override
-	public void insertRow() throws SQLException {
-		delegate.insertRow();
-	}
-
 	@Override
-	public void updateRow() throws SQLException {
-		delegate.updateRow();
+	public NClob getNClob(int columnIndex) throws SQLException {
+		return cache(delegate.getNClob(columnIndex), columnIndex);
 	}
 
 	@Override
-	public void deleteRow() throws SQLException {
-		delegate.deleteRow();
+	public NClob getNClob(String columnLabel) throws SQLException {
+		return cache(delegate.getNClob(columnLabel), columnLabel);
 	}
 
 	@Override
-	public void refreshRow() throws SQLException {
-		delegate.refreshRow();
+	public SQLXML getSQLXML(int columnIndex) throws SQLException {
+		return cache(delegate.getSQLXML(columnIndex), columnIndex);
 	}
 
 	@Override
-	public void cancelRowUpdates() throws SQLException {
-		delegate.cancelRowUpdates();
+	public SQLXML getSQLXML(String columnLabel) throws SQLException {
+		return cache(delegate.getSQLXML(columnLabel), columnLabel);
 	}
 
 	@Override
-	public void moveToInsertRow() throws SQLException {
-		delegate.moveToInsertRow();
+	public String getNString(int columnIndex) throws SQLException {
+		return cache(delegate.getNString(columnIndex), columnIndex);
 	}
 
 	@Override
-	public void moveToCurrentRow() throws SQLException {
-		delegate.moveToCurrentRow();
+	public String getNString(String columnLabel) throws SQLException {
+		return cache(delegate.getNString(columnLabel), columnLabel);
 	}
 
 	@Override
-	public Statement getStatement() throws SQLException {
-		return delegate.getStatement();
+	public Reader getNCharacterStream(int columnIndex) throws SQLException {
+		return cacheAndStream(delegate.getNCharacterStream(columnIndex), columnIndex);
 	}
 
 	@Override
-	public Object getObject(int columnIndex, Map<String, Class<?>> map)
-			throws SQLException {
-		return delegate.getObject(columnIndex, map);
+	public Reader getNCharacterStream(String columnLabel) throws SQLException {
+		return cacheAndStream(delegate.getNCharacterStream(columnLabel), columnLabel);
 	}
 
 	@Override
 	public Ref getRef(int columnIndex) throws SQLException {
-		return delegate.getRef(columnIndex);
+		return cache(delegate.getRef(columnIndex), columnIndex);
 	}
 
 	@Override
 	public Blob getBlob(int columnIndex) throws SQLException {
-		return delegate.getBlob(columnIndex);
+		return cache(delegate.getBlob(columnIndex), columnIndex);
 	}
 
 	@Override
 	public Clob getClob(int columnIndex) throws SQLException {
-		return delegate.getClob(columnIndex);
+		return cache(delegate.getClob(columnIndex), columnIndex);
 	}
 
 	@Override
 	public Array getArray(int columnIndex) throws SQLException {
-		return delegate.getArray(columnIndex);
+		return cache(delegate.getArray(columnIndex), columnIndex);
 	}
 
-	@Override
-	public Object getObject(String columnLabel, Map<String, Class<?>> map)
-			throws SQLException {
-		return delegate.getObject(columnLabel, map);
-	}
 
 	@Override
 	public Ref getRef(String columnLabel) throws SQLException {
-		return delegate.getRef(columnLabel);
+		return cache(delegate.getRef(columnLabel), columnLabel);
 	}
 
 	@Override
 	public Blob getBlob(String columnLabel) throws SQLException {
-		return delegate.getBlob(columnLabel);
+		return cache(delegate.getBlob(columnLabel), columnLabel);
 	}
 
 	@Override
 	public Clob getClob(String columnLabel) throws SQLException {
-		return delegate.getClob(columnLabel);
+		return cache(delegate.getClob(columnLabel), columnLabel);
 	}
 
 	@Override
 	public Array getArray(String columnLabel) throws SQLException {
-		return delegate.getArray(columnLabel);
+		return cache(delegate.getArray(columnLabel), columnLabel);
 	}
 
 	@Override
 	public Date getDate(int columnIndex, Calendar cal) throws SQLException {
-		return delegate.getDate(columnIndex, cal);
+		return cache(delegate.getDate(columnIndex, cal), columnIndex);
 	}
 
 	@Override
 	public Date getDate(String columnLabel, Calendar cal) throws SQLException {
-		return delegate.getDate(columnLabel, cal);
+		return cache(delegate.getDate(columnLabel, cal), columnLabel);
 	}
 
 	@Override
 	public Time getTime(int columnIndex, Calendar cal) throws SQLException {
-		return delegate.getTime(columnIndex, cal);
+		return cache(delegate.getTime(columnIndex, cal), columnIndex);
 	}
 
 	@Override
 	public Time getTime(String columnLabel, Calendar cal) throws SQLException {
-		return delegate.getTime(columnLabel, cal);
+		return cache(delegate.getTime(columnLabel, cal), columnLabel);
 	}
 
 	@Override
-	public Timestamp getTimestamp(int columnIndex, Calendar cal)
-			throws SQLException {
-		return delegate.getTimestamp(columnIndex, cal);
+	public Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLException {
+		return cache(delegate.getTimestamp(columnIndex, cal), columnIndex);
 	}
 
 	@Override
-	public Timestamp getTimestamp(String columnLabel, Calendar cal)
-			throws SQLException {
-		return delegate.getTimestamp(columnLabel, cal);
+	public Timestamp getTimestamp(String columnLabel, Calendar cal) throws SQLException {
+		return cache(delegate.getTimestamp(columnLabel, cal), columnLabel);
 	}
 
 	@Override
 	public URL getURL(int columnIndex) throws SQLException {
-		return delegate.getURL(columnIndex);
+		return cache(delegate.getURL(columnIndex), columnIndex);
 	}
 
 	@Override
 	public URL getURL(String columnLabel) throws SQLException {
-		return delegate.getURL(columnLabel);
+		return cache(delegate.getURL(columnLabel), columnLabel);
 	}
-
-	@Override
-	public void updateRef(int columnIndex, Ref x) throws SQLException {
-		delegate.updateRef(columnIndex, x);
-	}
-
-	@Override
-	public void updateRef(String columnLabel, Ref x) throws SQLException {
-		delegate.updateRef(columnLabel, x);
-	}
-
-	@Override
-	public void updateBlob(int columnIndex, Blob x) throws SQLException {
-		delegate.updateBlob(columnIndex, x);
-	}
-
-	@Override
-	public void updateBlob(String columnLabel, Blob x) throws SQLException {
-		delegate.updateBlob(columnLabel, x);
-	}
-
-	@Override
-	public void updateClob(int columnIndex, Clob x) throws SQLException {
-		delegate.updateClob(columnIndex, x);
-	}
-
-	@Override
-	public void updateClob(String columnLabel, Clob x) throws SQLException {
-		delegate.updateClob(columnLabel, x);
-	}
-
-	@Override
-	public void updateArray(int columnIndex, Array x) throws SQLException {
-		delegate.updateArray(columnIndex, x);
-	}
-
-	@Override
-	public void updateArray(String columnLabel, Array x) throws SQLException {
-		delegate.updateArray(columnLabel, x);
-	}
-
-	@Override
-	public RowId getRowId(int columnIndex) throws SQLException {
-		return delegate.getRowId(columnIndex);
-	}
-
-	@Override
-	public RowId getRowId(String columnLabel) throws SQLException {
-		return delegate.getRowId(columnLabel);
-	}
-
-	@Override
-	public void updateRowId(int columnIndex, RowId x) throws SQLException {
-		delegate.updateRowId(columnIndex, x);
-	}
-
-	@Override
-	public void updateRowId(String columnLabel, RowId x) throws SQLException {
-		delegate.updateRowId(columnLabel, x);
-	}
-
-	@Override
-	public int getHoldability() throws SQLException {
-		return delegate.getHoldability();
-	}
-
+	
+	// delegate
+	
 	@Override
 	public boolean isClosed() throws SQLException {
 		return delegate.isClosed();
 	}
 
 	@Override
-	public void updateNString(int columnIndex, String nString)
-			throws SQLException {
-		delegate.updateNString(columnIndex, nString);
+	public int findColumn(String columnLabel) throws SQLException {
+		return delegate.findColumn(columnLabel);
+	}
+	
+	@Override
+	public ResultSetMetaData getMetaData() throws SQLException {
+		return delegate.getMetaData();
+	}
+	
+	// Not implemented (may change)
+
+	
+	@Override
+	public Object getObject(int columnIndex, Map<String, Class<?>> map) throws SQLException {
+		// to implement if needed
+		// return delegate.getObject(columnIndex, map);
+		throw new RuntimeException("Not implemented");
+	}
+
+
+	@Override
+	public Object getObject(String columnLabel, Map<String, Class<?>> map) throws SQLException {
+		// to implement if needed
+		// return delegate.getObject(columnLabel, map);
+		throw new RuntimeException("Not implemented");
+	}
+	
+	@Override
+	public SQLWarning getWarnings() throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateNString(String columnLabel, String nString)
-			throws SQLException {
-		delegate.updateNString(columnLabel, nString);
+	public void clearWarnings() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public String getCursorName() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+	
+	@Override
+	public boolean isBeforeFirst() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public boolean isAfterLast() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public boolean isFirst() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public boolean isLast() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void beforeFirst() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void afterLast() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public boolean first() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public boolean last() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public int getRow() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public boolean absolute(int row) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public boolean relative(int rows) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public boolean previous() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public <T> T unwrap(Class<T> iface) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public boolean isWrapperFor(Class<?> iface) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void setFetchDirection(int direction) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public int getFetchDirection() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void setFetchSize(int rows) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public int getFetchSize() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public int getType() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public int getConcurrency() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public boolean rowUpdated() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public boolean rowInserted() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public boolean rowDeleted() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateNull(int columnIndex) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateBoolean(int columnIndex, boolean x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateByte(int columnIndex, byte x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateShort(int columnIndex, short x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateInt(int columnIndex, int x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateLong(int columnIndex, long x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateFloat(int columnIndex, float x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateDouble(int columnIndex, double x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateBigDecimal(int columnIndex, BigDecimal x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateString(int columnIndex, String x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateBytes(int columnIndex, byte[] x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateDate(int columnIndex, Date x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateTime(int columnIndex, Time x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateTimestamp(int columnIndex, Timestamp x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateAsciiStream(int columnIndex, InputStream x, int length) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateBinaryStream(int columnIndex, InputStream x, int length) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateCharacterStream(int columnIndex, Reader x, int length) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateObject(int columnIndex, Object x, int scaleOrLength) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateObject(int columnIndex, Object x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateNull(String columnLabel) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateBoolean(String columnLabel, boolean x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateByte(String columnLabel, byte x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateShort(String columnLabel, short x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateInt(String columnLabel, int x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateLong(String columnLabel, long x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateFloat(String columnLabel, float x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateDouble(String columnLabel, double x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateBigDecimal(String columnLabel, BigDecimal x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateString(String columnLabel, String x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateBytes(String columnLabel, byte[] x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateDate(String columnLabel, Date x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateTime(String columnLabel, Time x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateTimestamp(String columnLabel, Timestamp x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateAsciiStream(String columnLabel, InputStream x, int length) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateBinaryStream(String columnLabel, InputStream x, int length) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateCharacterStream(String columnLabel, Reader reader, int length) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateObject(String columnLabel, Object x, int scaleOrLength) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateObject(String columnLabel, Object x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void insertRow() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateRow() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void deleteRow() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void refreshRow() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void cancelRowUpdates() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void moveToInsertRow() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void moveToCurrentRow() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public Statement getStatement() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateRef(int columnIndex, Ref x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateRef(String columnLabel, Ref x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateBlob(int columnIndex, Blob x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateBlob(String columnLabel, Blob x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateClob(int columnIndex, Clob x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateClob(String columnLabel, Clob x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateArray(int columnIndex, Array x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateArray(String columnLabel, Array x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public RowId getRowId(int columnIndex) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public RowId getRowId(String columnLabel) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateRowId(int columnIndex, RowId x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateRowId(String columnLabel, RowId x) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public int getHoldability() throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateNString(int columnIndex, String nString) throws SQLException {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public void updateNString(String columnLabel, String nString) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
 	public void updateNClob(int columnIndex, NClob nClob) throws SQLException {
-		delegate.updateNClob(columnIndex, nClob);
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateNClob(String columnLabel, NClob nClob)
-			throws SQLException {
-		delegate.updateNClob(columnLabel, nClob);
+	public void updateNClob(String columnLabel, NClob nClob) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public NClob getNClob(int columnIndex) throws SQLException {
-		return delegate.getNClob(columnIndex);
+	public void updateSQLXML(int columnIndex, SQLXML xmlObject) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public NClob getNClob(String columnLabel) throws SQLException {
-		return delegate.getNClob(columnLabel);
+	public void updateSQLXML(String columnLabel, SQLXML xmlObject) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public SQLXML getSQLXML(int columnIndex) throws SQLException {
-		return delegate.getSQLXML(columnIndex);
+	public void updateNCharacterStream(int columnIndex, Reader x, long length) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public SQLXML getSQLXML(String columnLabel) throws SQLException {
-		return delegate.getSQLXML(columnLabel);
+	public void updateNCharacterStream(String columnLabel, Reader reader, long length) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateSQLXML(int columnIndex, SQLXML xmlObject)
-			throws SQLException {
-		delegate.updateSQLXML(columnIndex, xmlObject);
+	public void updateAsciiStream(int columnIndex, InputStream x, long length) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateSQLXML(String columnLabel, SQLXML xmlObject)
-			throws SQLException {
-		delegate.updateSQLXML(columnLabel, xmlObject);
+	public void updateBinaryStream(int columnIndex, InputStream x, long length) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public String getNString(int columnIndex) throws SQLException {
-		return delegate.getNString(columnIndex);
+	public void updateCharacterStream(int columnIndex, Reader x, long length) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public String getNString(String columnLabel) throws SQLException {
-		return delegate.getNString(columnLabel);
+	public void updateAsciiStream(String columnLabel, InputStream x, long length) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public Reader getNCharacterStream(int columnIndex) throws SQLException {
-		return delegate.getNCharacterStream(columnIndex);
+	public void updateBinaryStream(String columnLabel, InputStream x, long length) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public Reader getNCharacterStream(String columnLabel) throws SQLException {
-		return delegate.getNCharacterStream(columnLabel);
+	public void updateCharacterStream(String columnLabel, Reader reader, long length) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateNCharacterStream(int columnIndex, Reader x, long length)
-			throws SQLException {
-		delegate.updateNCharacterStream(columnIndex, x, length);
+	public void updateBlob(int columnIndex, InputStream inputStream, long length) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateNCharacterStream(String columnLabel, Reader reader,
-			long length) throws SQLException {
-		delegate.updateNCharacterStream(columnLabel, reader, length);
+	public void updateBlob(String columnLabel, InputStream inputStream, long length) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateAsciiStream(int columnIndex, InputStream x, long length)
-			throws SQLException {
-		delegate.updateAsciiStream(columnIndex, x, length);
+	public void updateClob(int columnIndex, Reader reader, long length) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateBinaryStream(int columnIndex, InputStream x, long length)
-			throws SQLException {
-		delegate.updateBinaryStream(columnIndex, x, length);
+	public void updateClob(String columnLabel, Reader reader, long length) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateCharacterStream(int columnIndex, Reader x, long length)
-			throws SQLException {
-		delegate.updateCharacterStream(columnIndex, x, length);
+	public void updateNClob(int columnIndex, Reader reader, long length) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateAsciiStream(String columnLabel, InputStream x, long length)
-			throws SQLException {
-		delegate.updateAsciiStream(columnLabel, x, length);
+	public void updateNClob(String columnLabel, Reader reader, long length) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateBinaryStream(String columnLabel, InputStream x,
-			long length) throws SQLException {
-		delegate.updateBinaryStream(columnLabel, x, length);
+	public void updateNCharacterStream(int columnIndex, Reader x) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateCharacterStream(String columnLabel, Reader reader,
-			long length) throws SQLException {
-		delegate.updateCharacterStream(columnLabel, reader, length);
+	public void updateNCharacterStream(String columnLabel, Reader reader) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateBlob(int columnIndex, InputStream inputStream, long length)
-			throws SQLException {
-		delegate.updateBlob(columnIndex, inputStream, length);
+	public void updateAsciiStream(int columnIndex, InputStream x) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateBlob(String columnLabel, InputStream inputStream,
-			long length) throws SQLException {
-		delegate.updateBlob(columnLabel, inputStream, length);
+	public void updateBinaryStream(int columnIndex, InputStream x) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateClob(int columnIndex, Reader reader, long length)
-			throws SQLException {
-		delegate.updateClob(columnIndex, reader, length);
+	public void updateCharacterStream(int columnIndex, Reader x) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateClob(String columnLabel, Reader reader, long length)
-			throws SQLException {
-		delegate.updateClob(columnLabel, reader, length);
+	public void updateAsciiStream(String columnLabel, InputStream x) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateNClob(int columnIndex, Reader reader, long length)
-			throws SQLException {
-		delegate.updateNClob(columnIndex, reader, length);
+	public void updateBinaryStream(String columnLabel, InputStream x) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateNClob(String columnLabel, Reader reader, long length)
-			throws SQLException {
-		delegate.updateNClob(columnLabel, reader, length);
+	public void updateCharacterStream(String columnLabel, Reader reader) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateNCharacterStream(int columnIndex, Reader x)
-			throws SQLException {
-		delegate.updateNCharacterStream(columnIndex, x);
+	public void updateBlob(int columnIndex, InputStream inputStream) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateNCharacterStream(String columnLabel, Reader reader)
-			throws SQLException {
-		delegate.updateNCharacterStream(columnLabel, reader);
-	}
-
-	@Override
-	public void updateAsciiStream(int columnIndex, InputStream x)
-			throws SQLException {
-		delegate.updateAsciiStream(columnIndex, x);
-	}
-
-	@Override
-	public void updateBinaryStream(int columnIndex, InputStream x)
-			throws SQLException {
-		delegate.updateBinaryStream(columnIndex, x);
-	}
-
-	@Override
-	public void updateCharacterStream(int columnIndex, Reader x)
-			throws SQLException {
-		delegate.updateCharacterStream(columnIndex, x);
-	}
-
-	@Override
-	public void updateAsciiStream(String columnLabel, InputStream x)
-			throws SQLException {
-		delegate.updateAsciiStream(columnLabel, x);
-	}
-
-	@Override
-	public void updateBinaryStream(String columnLabel, InputStream x)
-			throws SQLException {
-		delegate.updateBinaryStream(columnLabel, x);
-	}
-
-	@Override
-	public void updateCharacterStream(String columnLabel, Reader reader)
-			throws SQLException {
-		delegate.updateCharacterStream(columnLabel, reader);
-	}
-
-	@Override
-	public void updateBlob(int columnIndex, InputStream inputStream)
-			throws SQLException {
-		delegate.updateBlob(columnIndex, inputStream);
-	}
-
-	@Override
-	public void updateBlob(String columnLabel, InputStream inputStream)
-			throws SQLException {
-		delegate.updateBlob(columnLabel, inputStream);
+	public void updateBlob(String columnLabel, InputStream inputStream) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
 	public void updateClob(int columnIndex, Reader reader) throws SQLException {
-		delegate.updateClob(columnIndex, reader);
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateClob(String columnLabel, Reader reader)
-			throws SQLException {
-		delegate.updateClob(columnLabel, reader);
+	public void updateClob(String columnLabel, Reader reader) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
 	public void updateNClob(int columnIndex, Reader reader) throws SQLException {
-		delegate.updateNClob(columnIndex, reader);
+		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public void updateNClob(String columnLabel, Reader reader)
-			throws SQLException {
-		delegate.updateNClob(columnLabel, reader);
+	public void updateNClob(String columnLabel, Reader reader) throws SQLException {
+		throw new RuntimeException("Not implemented");
 	}
 
 }
