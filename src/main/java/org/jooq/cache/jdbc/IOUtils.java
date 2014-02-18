@@ -8,7 +8,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 
-public class IOUtils {
+class IOUtils {
 
 	// inputstream
 	
