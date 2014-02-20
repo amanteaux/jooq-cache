@@ -1,7 +1,7 @@
 package org.jooq.cache;
 
 import org.jooq.CachedConfiguration;
-import org.jooq.DefaultConfigurationExtended;
+import org.jooq.impl.DefaultConfigurationExtended;
 
 public class DefaultCachedConfiguration extends DefaultConfigurationExtended implements CachedConfiguration {
 

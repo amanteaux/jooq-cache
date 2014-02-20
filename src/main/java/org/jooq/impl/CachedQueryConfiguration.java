@@ -14,6 +14,7 @@ import org.jooq.SchemaMapping;
 import org.jooq.VisitListener;
 import org.jooq.VisitListenerProvider;
 import org.jooq.conf.Settings;
+import org.jooq.conf.SettingsExtended;
 
 @SuppressWarnings("deprecation")
 class CachedQueryConfiguration implements ConfigurationExtended {
@@ -177,6 +178,16 @@ class CachedQueryConfiguration implements ConfigurationExtended {
 	@Override
 	public Configuration derive(Settings newSettings) {
 		return delegate.derive(newSettings);
+	}
+
+	@Override
+	public SettingsExtended settingsExtended() {
+		return delegate.settingsExtended();
+	}
+
+	@Override
+	public ConfigurationExtended set(SettingsExtended settingsExtended) {
+		return delegate.set(settingsExtended);
 	}
 
 
