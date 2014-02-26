@@ -1,5 +1,6 @@
 package org.jooq.cache;
 
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import com.google.common.cache.CacheBuilder;
@@ -44,6 +45,20 @@ public final class CacheManager {
 			return CACHE_INDEXES.get(cacheProvider).get(TABLE_INDEX_KEY);
 		} catch (ExecutionException e) {
 			throw new RuntimeException(e);
+		}
+	}
+	
+	public final static void clearByQuery(CacheProvider cacheProvider, String query) {
+		fetchByQuery(cacheProvider, query).clear();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public final static void clearByTable(CacheProvider cacheProvider, String tableName) {
+		Set<String> queries = (Set<String>) tableIndex(cacheProvider).get(tableName);
+		if(queries != null) {
+			for(String query : queries) {
+				clearByQuery(cacheProvider, query);
+			}
 		}
 	}
 	
