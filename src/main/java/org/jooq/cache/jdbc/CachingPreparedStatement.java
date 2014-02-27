@@ -52,8 +52,8 @@ class CachingPreparedStatement implements PreparedStatement {
 	 */
 	private CachedData cachedData() throws SQLException {
 		// [#8] Do not cache a query result when a connection is set to autocommit = false
-		if(delegate.getConnection().getAutoCommit()) {
-			cachedData = Utils.cachedData(queryInformation.getCacheProvider(), queryInformation.getQuery(), queryInformation.getQueryParameters());
+		if(getConnection().getAutoCommit()) {
+			cachedData = Utils.cachedData(queryInformation.getCacheManager(), queryInformation.getQuery(), queryInformation.getQueryParameters());
 			
 			if(cachedData != null && log.isDebugEnabled()) {
 				log.debug("Cache is used for this query");

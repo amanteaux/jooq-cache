@@ -5,18 +5,17 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.jooq.cache.Cache;
 import org.jooq.cache.CacheManager;
-import org.jooq.cache.CacheProvider;
 
 class Utils {
 	
-	static CachedData cachedData(CacheProvider cacheProvider, String query, String queryParameters) {
-		return (CachedData) CacheManager.fetchByQuery(cacheProvider, query).get(queryParameters);
+	static CachedData cachedData(CacheManager cacheManager, String query, String queryParameters) {
+		return (CachedData) cacheManager.fetchByQuery(query).get(queryParameters);
 	}
 
-	static void cache(CacheProvider cacheProvider, Set<String> referencedTables, String query, String queryParameters, CachedData cachedData) {
-		CacheManager.fetchByQuery(cacheProvider, query).put(queryParameters, cachedData);
+	static void cache(CacheManager cacheManager, Set<String> referencedTables, String query, String queryParameters, CachedData cachedData) {
+		cacheManager.fetchByQuery(query).put(queryParameters, cachedData);
 		
-		index(CacheManager.tableIndex(cacheProvider), referencedTables, query);
+		index(cacheManager.tableIndex(), referencedTables, query);
 	}
 	
 	/**

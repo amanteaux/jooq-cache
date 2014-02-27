@@ -9,11 +9,6 @@ import com.google.common.cache.CacheBuilder;
 
 public final class DefaultCacheProvider implements CacheProvider {
 	
-	static final DefaultCacheProvider INSTANCE = new DefaultCacheProvider();
-	
-	private DefaultCacheProvider() {
-	}
-
 	@Override
 	public final Cache tableIndex() {
 		return new DefaultCache();

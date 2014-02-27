@@ -1,12 +1,12 @@
 package org.jooq;
 
-import org.jooq.cache.CacheProvider;
+import org.jooq.cache.CacheManager;
 
 public interface CachedConfiguration extends ConfigurationExtended {
 	
 	/**
-	 * @return The cache provider, should always return the same instance
+	 * @return The cache manager, should always return the same instance for all the DAO that interact between each other
 	 */
-	CacheProvider cacheProvider();
+	CacheManager cacheManager();
 
 }

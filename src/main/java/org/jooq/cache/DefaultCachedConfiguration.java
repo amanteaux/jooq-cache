@@ -6,10 +6,20 @@ import org.jooq.impl.DefaultConfigurationExtended;
 public class DefaultCachedConfiguration extends DefaultConfigurationExtended implements CachedConfiguration {
 
 	private static final long serialVersionUID = -3764955303536523419L;
+	
+	private final CacheManager cacheManager;
+
+	public DefaultCachedConfiguration(CacheProvider cacheProvider) {
+		cacheManager = new CacheManager(cacheProvider);
+	}
+	
+	public DefaultCachedConfiguration() {
+		this(new DefaultCacheProvider());
+	}
 
 	@Override
-	public CacheProvider cacheProvider() {
-		return DefaultCacheProvider.INSTANCE;
+	public CacheManager cacheManager() {
+		return cacheManager;
 	}
 
 }

@@ -14,50 +14,44 @@ import com.google.common.cache.LoadingCache;
  */
 public final class CacheManager {
 	
-	private static final String TABLE_INDEX_KEY = "_";
+	
+	private final LoadingCache<String, Cache> queriesCache;
+	private final Cache tableIndex;
+	
+	public CacheManager(final CacheProvider cacheProvider) {
+		this.queriesCache = CacheBuilder
+				.newBuilder()
+				.build(new CacheLoader<String, Cache>() {
+					@Override
+					public Cache load(String key) throws Exception {
+						return cacheProvider.fetchByQuery(key);
+					}
+				});
+		this.tableIndex = cacheProvider.tableIndex();
+	}
 
-	private static final LoadingCache<CacheProvider, LoadingCache<String, Cache>> CACHE_INDEXES = CacheBuilder
-	.newBuilder()
-	.build(new CacheLoader<CacheProvider, LoadingCache<String, Cache>>() {
-		@Override
-		public LoadingCache<String, Cache> load(final CacheProvider cacheProvider) throws Exception {
-			return CacheBuilder
-			.newBuilder()
-			.build(new CacheLoader<String, Cache>() {
-				@Override
-				public Cache load(String key) throws Exception {
-					return TABLE_INDEX_KEY == key ? cacheProvider.tableIndex() : cacheProvider.fetchByQuery(key);
-				}
-			});
-		}
-	});
-	
-	public final static Cache fetchByQuery(CacheProvider cacheProvider, String query) {
+	public final Cache fetchByQuery(String query) {
 		try {
-			return CACHE_INDEXES.get(cacheProvider).get(query);
+			return queriesCache.get(query);
 		} catch (ExecutionException e) {
 			throw new RuntimeException(e);
 		}
 	}
 	
-	public final static Cache tableIndex(CacheProvider cacheProvider) {
-		try {
-			return CACHE_INDEXES.get(cacheProvider).get(TABLE_INDEX_KEY);
-		} catch (ExecutionException e) {
-			throw new RuntimeException(e);
-		}
+	public final Cache tableIndex() {
+		return tableIndex;
 	}
 	
-	public final static void clearByQuery(CacheProvider cacheProvider, String query) {
-		fetchByQuery(cacheProvider, query).clear();
+	public final void clearByQuery(String query) {
+		fetchByQuery(query).clear();
 	}
 	
 	@SuppressWarnings("unchecked")
-	public final static void clearByTable(CacheProvider cacheProvider, String tableName) {
-		Set<String> queries = (Set<String>) tableIndex(cacheProvider).get(tableName);
+	public final void clearByTable(String tableName) {
+		Set<String> queries = (Set<String>) tableIndex().get(tableName);
 		if(queries != null) {
 			for(String query : queries) {
-				clearByQuery(cacheProvider, query);
+				clearByQuery(query);
 			}
 		}
 	}

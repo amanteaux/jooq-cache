@@ -12,7 +12,6 @@ import org.jooq.Result;
 import org.jooq.ResultQuery;
 import org.jooq.Table;
 import org.jooq.UpdatableRecord;
-import org.jooq.cache.CacheManager;
 import org.jooq.conf.ParamType;
 
 public abstract class CachedDAOImpl<R extends UpdatableRecord<R>, P, T> implements CachedDAO<R, P, T> {
@@ -62,7 +61,7 @@ public abstract class CachedDAOImpl<R extends UpdatableRecord<R>, P, T> implemen
 				new CacheQueryInformation(
 					query.getSQL(ParamType.INDEXED),
 					query.getBindValues(),
-					configuration().cacheProvider()
+					configuration().cacheManager()
 				)
 			)
 		);
@@ -78,7 +77,7 @@ public abstract class CachedDAOImpl<R extends UpdatableRecord<R>, P, T> implemen
 	 * - The cache for the query : SELECT d FROM TableB WHERE a = ? will NOT be cleared
 	 */
 	public final void clearCache() {
-		CacheManager.clearByTable(configuration().cacheProvider(), getTable().getName());
+		configuration().cacheManager().clearByTable(getTable().getName());
 	}
 	
     // ------------------------------------------------------------------------

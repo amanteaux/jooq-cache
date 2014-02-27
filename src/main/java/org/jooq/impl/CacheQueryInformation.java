@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jooq.VisitListener;
-import org.jooq.cache.CacheProvider;
+import org.jooq.cache.CacheManager;
 
 public class CacheQueryInformation {
  
@@ -13,13 +13,13 @@ public class CacheQueryInformation {
 	private final String queryParameters;
 	private final VisitListener visitListener;
 	private final Set<String> referencedTables;
-	private final CacheProvider cacheProvider; 
+	private final CacheManager cacheManager; 
 
-	public CacheQueryInformation(String query, List<Object> queryParameters, CacheProvider cacheProvider) {
+	public CacheQueryInformation(String query, List<Object> queryParameters, CacheManager cacheManager) {
 		this.query = query;
 		this.queryParameters = queryParameters.toString();
 		this.referencedTables = new HashSet<String>();
-		this.cacheProvider = cacheProvider;
+		this.cacheManager = cacheManager;
 		this.visitListener = new CachedVisitListener(referencedTables);
 	}
 
@@ -31,8 +31,8 @@ public class CacheQueryInformation {
 		return queryParameters;
 	}
 
-	public CacheProvider getCacheProvider() {
-		return cacheProvider;
+	public CacheManager getCacheManager() {
+		return cacheManager;
 	}
 
 	/**
