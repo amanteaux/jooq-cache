@@ -10,14 +10,14 @@ import org.jooq.cache.CacheManager;
 public class CacheQueryInformation {
  
 	private final String query;
-	private final String queryParameters;
+	private final List<Object> queryParameters;
 	private final VisitListener visitListener;
 	private final Set<String> referencedTables;
 	private final CacheManager cacheManager; 
 
 	public CacheQueryInformation(String query, List<Object> queryParameters, CacheManager cacheManager) {
 		this.query = query;
-		this.queryParameters = queryParameters.toString();
+		this.queryParameters = queryParameters;
 		this.referencedTables = new HashSet<String>();
 		this.cacheManager = cacheManager;
 		this.visitListener = new CachedVisitListener(referencedTables);
@@ -27,7 +27,7 @@ public class CacheQueryInformation {
 		return query;
 	}
 
-	public String getQueryParameters() {
+	public List<Object> getQueryParameters() {
 		return queryParameters;
 	}
 
