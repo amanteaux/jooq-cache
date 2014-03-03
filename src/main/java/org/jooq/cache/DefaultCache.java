@@ -30,5 +30,9 @@ public class DefaultCache implements Cache {
 	public void clear() {
 		data.clear();
 	}
+	
+	boolean isEmpty() {
+		return data.isEmpty();
+	}
 
 }

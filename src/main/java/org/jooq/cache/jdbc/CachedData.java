@@ -16,7 +16,7 @@ public class CachedData implements Serializable {
 	private final List<Object[]> rows;
 	private final Map<String, Integer> fields;
 
-	CachedData(List<Object[]> rows, Map<String, Integer> fields) {
+	public CachedData(List<Object[]> rows, Map<String, Integer> fields) {
 		this.rows = rows;
 		this.fields = fields;
 	}
