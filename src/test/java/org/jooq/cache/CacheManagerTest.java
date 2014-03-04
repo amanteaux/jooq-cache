@@ -4,6 +4,7 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import java.util.Set;
 
+import org.jooq.cache.impl.DefaultCache;
 import org.jooq.cache.jdbc.CachedData;
 import org.junit.Test;
 

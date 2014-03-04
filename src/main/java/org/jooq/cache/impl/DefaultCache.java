@@ -1,8 +1,10 @@
-package org.jooq.cache;
+package org.jooq.cache.impl;
 
 import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.jooq.cache.Cache;
 
 /**
  * A cache backed with a {@link ConcurrentHashMap}

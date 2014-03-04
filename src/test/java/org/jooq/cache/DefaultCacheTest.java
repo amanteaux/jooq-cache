@@ -2,6 +2,7 @@ package org.jooq.cache;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import org.jooq.cache.impl.DefaultCache;
 import org.junit.Test;
 
 public class DefaultCacheTest {

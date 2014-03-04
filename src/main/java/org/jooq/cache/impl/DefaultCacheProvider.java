@@ -1,7 +1,10 @@
-package org.jooq.cache;
+package org.jooq.cache.impl;
 
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
+
+import org.jooq.cache.Cache;
+import org.jooq.cache.CacheProvider;
 
 import com.google.common.cache.CacheBuilder;
 
