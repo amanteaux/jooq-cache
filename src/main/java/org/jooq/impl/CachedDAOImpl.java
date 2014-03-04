@@ -1,5 +1,8 @@
 package org.jooq.impl;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -83,20 +86,45 @@ public abstract class CachedDAOImpl<R extends UpdatableRecord<R>, P, T> implemen
     // ------------------------------------------------------------------------
     // XXX: ExtendedDAOImpl override
     // ------------------------------------------------------------------------
+	
 
+	public final void insert(P object) {
+		insert(singletonList(object));
+	}
+
+	public final void insert(P... objects) {
+		insert(asList(objects));
+	}
+	
 	public final void insert(Collection<P> objects) {
 		delegate.insert(objects);
 		clearCache();
+	}
+
+	public final void update(P object) {
+		update(singletonList(object));
+	}
+
+	public final void update(P... objects) {
+		update(asList(objects));
 	}
 	
 	public final void update(Collection<P> objects) {
 		delegate.update(objects);
 		clearCache();
 	}
-	
+
+	public final void delete(P... objects) {
+		delete(asList(objects));
+	}
+
 	public final void delete(Collection<P> objects) {
 		delegate.delete(objects);
 		clearCache();
+	}
+	
+	public final void deleteById(T... ids) {
+		deleteById(asList(ids));
 	}
 
 	public final void deleteById(Collection<T> ids) {
@@ -110,30 +138,6 @@ public abstract class CachedDAOImpl<R extends UpdatableRecord<R>, P, T> implemen
 	
 	public RecordMapper<R, P> mapper() {
 		return delegate.mapper();
-	}
-
-	public final void insert(P object) {
-		delegate.insert(object);
-	}
-
-	public final void insert(P... objects) {
-		delegate.insert(objects);
-	}
-
-	public final void update(P object) {
-		delegate.update(object);
-	}
-
-	public final void update(P... objects) {
-		delegate.update(objects);
-	}
-
-	public final void delete(P... objects) {
-		delegate.delete(objects);
-	}
-
-	public final void deleteById(T... ids) {
-		delegate.deleteById(ids);
 	}
 
 	public final boolean exists(P object) {

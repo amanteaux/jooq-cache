@@ -45,6 +45,7 @@ class CachingResultSet implements ResultSet {
 
 	private final List<Object[]> rows;
 	private final Map<String, Integer> fields;
+	private final List<ColumnInfo> colsInfo;
 	private Object[] row;
 	
 	private final int cols;
@@ -56,11 +57,14 @@ class CachingResultSet implements ResultSet {
 		// fetch the columns meta-data
 		ResultSetMetaData metaData = delegate.getMetaData();
 		int columnCount = metaData.getColumnCount();
+		List<ColumnInfo> columnInfos = new ArrayList<ColumnInfo>(columnCount);
 		Map<String, Integer> fields = new HashMap<String, Integer>(columnCount);
 		for (int i = 1; i < columnCount + 1; i++ ) {
 			fields.put(metaData.getColumnName(i), i);
+			columnInfos.add(new ColumnInfo(metaData.getPrecision(i), metaData.getScale(i), metaData.getColumnLabel(i), metaData.getColumnTypeName(i)));
 		}
 		this.fields = Collections.unmodifiableMap(fields);
+		this.colsInfo = Collections.unmodifiableList(columnInfos);
 		this.cols = fields.size();
 		
 		this.rows = new ArrayList<Object[]>();
@@ -130,7 +134,7 @@ class CachingResultSet implements ResultSet {
 		
 		addRowIfNecessary();
 
-		queryInformation.getCacheManager().cacheQueryResult(queryInformation.getReferencedTables(), queryInformation.getQuery(), queryInformation.getQueryParameters(), new CachedData(Collections.unmodifiableList(rows), fields));
+		queryInformation.getCacheManager().cacheQueryResult(queryInformation.getReferencedTables(), queryInformation.getQuery(), queryInformation.getQueryParameters(), new CachedData(Collections.unmodifiableList(rows), fields, colsInfo));
 	}
 
 	@Override

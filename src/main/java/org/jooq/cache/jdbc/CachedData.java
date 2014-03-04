@@ -15,10 +15,12 @@ public class CachedData implements Serializable {
 	
 	private final List<Object[]> rows;
 	private final Map<String, Integer> fields;
+	private final List<ColumnInfo> columnInfos;
 
-	public CachedData(List<Object[]> rows, Map<String, Integer> fields) {
+	public CachedData(List<Object[]> rows, Map<String, Integer> fields, List<ColumnInfo> columnInfos) {
 		this.rows = rows;
 		this.fields = fields;
+		this.columnInfos = columnInfos;
 	}
 	
 	public CachedResultSet newResultSet() {
@@ -33,4 +35,8 @@ public class CachedData implements Serializable {
 		return fields;
 	}
 
+	List<ColumnInfo> getColumnInfos() {
+		return columnInfos;
+	}
+	
 }

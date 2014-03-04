@@ -80,6 +80,12 @@ class CachedResultSet implements ResultSet {
 		return cachedData.getFields().get(columnLabel);
 	}
 	
+	
+	@Override
+	public ResultSetMetaData getMetaData() throws SQLException {
+		return new CachedResultSetMetaData(cachedData.getColumnInfos());
+	}
+	
 	// data
 	
 	@Override
@@ -403,12 +409,6 @@ class CachedResultSet implements ResultSet {
 	}
 
 	// Not implemented (may change)
-	
-	@Override
-	public ResultSetMetaData getMetaData() throws SQLException {
-		// to implement if needed
-		throw new RuntimeException("Not implemented");
-	}
 	
 	@Override
 	public Object getObject(int columnIndex, Map<String, Class<?>> map) throws SQLException {

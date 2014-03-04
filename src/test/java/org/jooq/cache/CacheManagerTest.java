@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.jooq.cache.impl.DefaultCache;
 import org.jooq.cache.jdbc.CachedData;
+import org.jooq.cache.jdbc.ColumnInfo;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -184,7 +185,7 @@ public class CacheManagerTest {
 	}
 	
 	private CachedData mockCachedData() {
-		return new CachedData(ImmutableList.<Object[]>of(), ImmutableMap.<String, Integer>of());
+		return new CachedData(ImmutableList.<Object[]>of(), ImmutableMap.<String, Integer>of(), ImmutableList.<ColumnInfo>of());
 	}
 	
 }
