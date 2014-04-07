@@ -20,14 +20,14 @@ public class CacheManagerTest {
     // --------------------------------------------------------------------------------
 	
 	@Test
-	public void should_return_null_because_no_data_exists() {
+	public void should_get_null_if_no_data_exists() {
 		CacheManager cacheManager = mockCacheManager();
 		
 		assertThat(cacheManager.getCachedDataIfPresent("SELECT * FROM table", ImmutableList.of())).isNull();
 	}
 	
 	@Test
-	public void should_return_the_cached_data() {
+	public void should_get_cached_data_if_it_has_been_put_to_cache() {
 		CacheManager cacheManager = mockCacheManager();
 		CachedData mockCachedData = mockCachedData();
 		
@@ -41,7 +41,7 @@ public class CacheManagerTest {
     // --------------------------------------------------------------------------------
 	
 	@Test
-	public void should_add_a_query_result_to_the_query_cache_and_index_it_in_the_table_index() {
+	public void should_add_a_query_result_to_the_query_cache_and_index_it_in_the_table_index_if_a_query_result_is_cached() {
 		CacheManager cacheManager = mockCacheManager();
 		CachedData mockCachedData = mockCachedData();
 		
@@ -57,7 +57,7 @@ public class CacheManagerTest {
     // --------------------------------------------------------------------------------
 	
 	@Test
-	public void should_clear_the_cache_for_a_query() {
+	public void testClearByQuery() {
 		CacheManager cacheManager = mockCacheManager();
 		cacheManager.cacheQueryResult(ImmutableSet.of("table1"), "SELECT * FROM table1", ImmutableList.of(), mockCachedData());
 		cacheManager.cacheQueryResult(ImmutableSet.of("table2"), "SELECT * FROM table2", ImmutableList.of(), mockCachedData());
@@ -75,7 +75,7 @@ public class CacheManagerTest {
     // --------------------------------------------------------------------------------
 	
 	@Test
-	public void should_clear_the_cache_for_a_table_referenced_in_queries() {
+	public void testClearByTable() {
 		CacheManager cacheManager = mockCacheManager();
 		cacheManager.cacheQueryResult(ImmutableSet.of("table1"), "SELECT * FROM table1", ImmutableList.of(), mockCachedData());
 		cacheManager.cacheQueryResult(ImmutableSet.of("table2"), "SELECT * FROM table2", ImmutableList.of(), mockCachedData());
@@ -95,7 +95,7 @@ public class CacheManagerTest {
     // --------------------------------------------------------------------------------
 	
 	@Test
-	public void should_concatenate_strings() {
+	public void testJoinParameters() {
 		CacheManager cacheManager = mockCacheManager();
 		
 		assertThat(cacheManager.joinParameters(ImmutableList.<Object>of("a", "b"))).isEqualTo("[a, b]");
@@ -107,7 +107,7 @@ public class CacheManagerTest {
     // --------------------------------------------------------------------------------
 	
 	@Test
-	public void should_create_a_cache_only_once() {
+	public void check_that_a_cache_is_created_only_once_for_a_cacheManager() {
 		CacheManager cacheManager = mockCacheManager();
 		assertThat(cacheManager.fetchByQuery("SELECT * FROM table")).isSameAs(cacheManager.fetchByQuery("SELECT * FROM table"));
 		assertThat(cacheManager.tableIndex()).isSameAs(cacheManager.tableIndex());
@@ -119,7 +119,7 @@ public class CacheManagerTest {
 	
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_add_a_query_to_multiple_table_index() {
+	public void testIndex() {
 		CacheManager cacheManager = mockCacheManager();
 		DefaultCache cache = new DefaultCache();
 		
@@ -134,7 +134,7 @@ public class CacheManagerTest {
     // --------------------------------------------------------------------------------
 	
 	@Test
-	public void should_use_a_set_for_the_table_index() {
+	public void check_that_index_values_are_actually_sets() {
 		CacheManager cacheManager = mockCacheManager();
 		DefaultCache cache = new DefaultCache();
 		
@@ -145,7 +145,7 @@ public class CacheManagerTest {
 	
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_add_a_table_and_a_query_to_the_table_index() {
+	public void check_that_index_add_both_an_entry_in_the_query_cache_and_in_the_table_index() {
 		CacheManager cacheManager = mockCacheManager();
 		DefaultCache cache = new DefaultCache();
 		
@@ -157,7 +157,7 @@ public class CacheManagerTest {
 	
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_add_a_query_to_the_table_index() {
+	public void check_that_index_use_the_existing_index_if_it_exists() {
 		CacheManager cacheManager = mockCacheManager();
 		DefaultCache cache = new DefaultCache();
 		

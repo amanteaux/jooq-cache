@@ -7,7 +7,7 @@ import org.junit.Test;
 public abstract class CacheTester {
 	
 	@Test
-	public void should_cache_content() {
+	public void should_get_the_content_cached_if_it_has_been_put_to_the_cache() {
 		Cache cache = cacheImplementation();
 		
 		cache.put("key", "content");
@@ -17,14 +17,14 @@ public abstract class CacheTester {
 	}
 	
 	@Test
-	public void should_return_null_if_empty() {
+	public void should_get_null_if_the_cache_is_empty() {
 		Cache cache = cacheImplementation();
 		
 		assertThat(cache.get("key")).isNull();
 	}
 	
 	@Test
-	public void should_override_existing_cached_values() {
+	public void should_get_new_values_if_existing_cached_values_are_being_overriden() {
 		Cache cache = cacheImplementation();
 		
 		cache.put("key", "content");
@@ -34,7 +34,7 @@ public abstract class CacheTester {
 	}
 	
 	@Test
-	public void should_clear_all_values() {
+	public void should_get_null_if_a_cache_with_existing_values_has_been_cleared() {
 		Cache cache = cacheImplementation();
 		
 		cache.put("key", "content");
