@@ -25,9 +25,9 @@ List<Book> booksCached = fetchCached (
 
 Any query that returns a result can be cached :
 ```java
-List<Book> booksCached = fetchCached (
-							create
-							.select(count())
-						)
-						.getValue(0, count())
+int count = fetchCached (
+				create
+				.select(count())
+			)
+			.getValue(0, count())
 ```
