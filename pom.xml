@@ -121,4 +121,8 @@
 			<url>https://raw.github.com/amanteaux/${project.artifactId}/mvn-repo</url>
 		</repository>
 	</distributionManagement>
+	
+	<scm>
+		<connection>scm:git:git@github.com:amanteaux/${project.artifactId}.git</connection>
+	</scm>
 </project>
