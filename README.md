@@ -31,3 +31,5 @@ int count = fetchCached (
 			)
 			.getValue(0, count())
 ```
+
+A demo project is available on https://github.com/amanteaux/jooq-cache-demo
