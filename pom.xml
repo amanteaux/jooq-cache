@@ -14,7 +14,7 @@
 		<dependency>
 			<groupId>org.jooq</groupId>
 			<artifactId>jooq-extended</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<version>1.0-APLHA1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
@@ -125,4 +125,11 @@
 	<scm>
 		<connection>scm:git:git@github.com:amanteaux/${project.artifactId}.git</connection>
 	</scm>
+	
+	<repositories>
+		<repository>
+			<id>jooq-extended</id>
+			<url>https://raw.github.com/amanteaux/jooq-extended/mvn-repo/</url>
+		</repository>
+	</repositories>
 </project>
