@@ -123,7 +123,6 @@
 	
 	<scm>
 		<connection>scm:git:git@github.com:amanteaux/${project.artifactId}.git</connection>
-    <tag>HEAD</tag>
   </scm>
 	
 	<repositories>
